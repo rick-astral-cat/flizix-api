@@ -1,0 +1,36 @@
+# --- Go ---
+bin/
+pkg/
+vendor/
+*.exe
+*.test
+*.prof
+
+# --- JetBrains (GoLand) ---
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# --- SQLite ---
+# Ignora las bases de datos locales, logs y archivos temporales
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# --- Atlas & SQLC ---
+# Normalmente el código generado por sqlc SE SUBE al repo, 
+# pero podemos ignorar archivos temporales si los hubiera.
+.atlas/
+
+# --- Environment Variables ---
+.env
+.env.local
+.env.*.local
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
