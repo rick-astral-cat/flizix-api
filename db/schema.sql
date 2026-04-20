@@ -4,9 +4,10 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    email TEXT UNIQUE,
     telegram_id TEXT UNIQUE,
     passkey_id TEXT UNIQUE,
-    registration_date TEXT DEFAULT (DATETIME('now')),
+    registration_date TEXT DEFAULT CURRENT_TIMESTAMP,
     deleted_at TEXT
 );
 
