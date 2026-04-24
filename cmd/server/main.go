@@ -20,13 +20,9 @@ func main() {
 		log.Fatal("Can´t connect to flizix database: ", err)
 	}
 	defer dbConn.Close()
-
 	queries := db.New(dbConn)
+
 	mux := http.NewServeMux()
-	apiCfg := &api.ApiConfig{Queries: queries}
-
-	mux.HandleFunc("POST /users", apiCfg.HandleCreateUser)
-
 	srv := &http.Server{
 		Addr:         ":8080",
 		Handler:      mux,
@@ -35,6 +31,9 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
+	apiCfg := &api.Config{Queries: queries}
+	apiCfg.RegisterRoutes(mux)
+
 	go func() {
 		log.Printf("Listening on port %s", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -42,7 +41,6 @@ func main() {
 		}
 	}()
 
-	//Graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop

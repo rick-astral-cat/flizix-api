@@ -8,7 +8,7 @@ import (
 	db "github.com/rick-astral-cat/flizix-api/db/sqlc"
 )
 
-type ApiConfig struct {
+type Config struct {
 	Queries *db.Queries
 }
 
@@ -18,7 +18,7 @@ type CreateUserRequest struct {
 	PasskeyID string `json:"passkey_id"`
 }
 
-func (api *ApiConfig) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
+func (api *Config) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
