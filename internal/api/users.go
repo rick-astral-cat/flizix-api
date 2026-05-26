@@ -9,7 +9,8 @@ import (
 )
 
 type Config struct {
-	Queries *db.Queries
+	Queries   *db.Queries
+	JWTSecret string
 }
 
 type CreateUserRequest struct {

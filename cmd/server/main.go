@@ -40,7 +40,10 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	apiCfg := &api.Config{Queries: queries}
+	apiCfg := &api.Config{
+		Queries:   queries,
+		JWTSecret: cfg.JWTSecret,
+	}
 	apiCfg.RegisterRoutes(mux)
 
 	go func() {

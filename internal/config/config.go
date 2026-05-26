@@ -13,9 +13,10 @@ const (
 )
 
 type Config struct {
-	AppEnv  string
-	DbUrl   string
-	AppPort string
+	AppEnv    string
+	DbUrl     string
+	AppPort   string
+	JWTSecret string
 }
 
 func getEnv(key, fallback string) string {
@@ -32,6 +33,13 @@ func (c *Config) validateDev() error {
 	}
 	c.DbUrl = dbUrl
 	c.AppEnv = "development"
+
+	jwtSecret := os.Getenv("DEV_JWT_SECRET")
+	if jwtSecret == "" {
+		return errors.New("DEV_JWT_SECRET environment variable not set")
+	}
+	c.JWTSecret = jwtSecret
+
 	return nil
 }
 
@@ -41,6 +49,13 @@ func (c *Config) validateProd() error {
 		return errors.New("DB_URL environment variable not set")
 	}
 	c.DbUrl = dbUrl
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return errors.New("JWT_SECRET environment variable not set")
+	}
+	c.JWTSecret = jwtSecret
+
 	return nil
 }
 
