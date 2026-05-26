@@ -13,10 +13,11 @@ const (
 )
 
 type Config struct {
-	AppEnv    string
-	DbUrl     string
-	AppPort   string
-	JWTSecret string
+	AppEnv           string
+	DbUrl            string
+	AppPort          string
+	JWTSecret        string
+	TelegramBotToken string
 }
 
 func getEnv(key, fallback string) string {
@@ -40,6 +41,12 @@ func (c *Config) validateDev() error {
 	}
 	c.JWTSecret = jwtSecret
 
+	tgToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	if tgToken == "" {
+		return errors.New("TELEGRAM_BOT_TOKEN environment variable not set")
+	}
+	c.TelegramBotToken = tgToken
+
 	return nil
 }
 
@@ -55,6 +62,12 @@ func (c *Config) validateProd() error {
 		return errors.New("JWT_SECRET environment variable not set")
 	}
 	c.JWTSecret = jwtSecret
+
+	tgToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	if tgToken == "" {
+		return errors.New("TELEGRAM_BOT_TOKEN environment variable not set")
+	}
+	c.TelegramBotToken = tgToken
 
 	return nil
 }

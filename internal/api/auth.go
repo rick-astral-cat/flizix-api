@@ -1,7 +1,12 @@
 package api
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -10,6 +15,15 @@ import (
 type CustomClaims struct {
 	UserID int64 `json:"user_id"`
 	jwt.RegisteredClaims
+}
+
+type TelegramAuthRequest struct {
+	ID        int64  `json:"id"`
+	FirstName string `json:"first_name"`
+	Username  string `json:"username"`
+	PhotoURL  string `json:"photo_url"`
+	AuthDate  int64  `json:"auth_date"`
+	Hash      string `json:"hash"`
 }
 
 // GenerateToken Generate new signed JWT
@@ -43,4 +57,31 @@ func (api *Config) ValidateToken(tokenString string) (*CustomClaims, error) {
 	}
 
 	return nil, fmt.Errorf("invalid token")
+}
+
+func (api *Config) VerifyTelegramHash(req TelegramAuthRequest) error {
+	data := []string{
+		fmt.Sprintf("auth_date=%d", req.AuthDate),
+		fmt.Sprintf("first_name=%s", req.FirstName),
+		fmt.Sprintf("id=%d", req.ID),
+	}
+	if req.Username != "" {
+		data = append(data, fmt.Sprintf("username=%s", req.Username))
+	}
+	if req.PhotoURL != "" {
+		data = append(data, fmt.Sprintf("photo_url=%s", req.PhotoURL))
+	}
+	sort.Strings(data)
+	dataCheckString := strings.Join(data, "\n")
+	sha := sha256.New()
+	sha.Write([]byte(api.TelegramBotToken))
+	secretKey := sha.Sum(nil)
+	h := hmac.New(sha256.New, secretKey)
+	h.Write([]byte(dataCheckString))
+	calculatedHash := hex.EncodeToString(h.Sum(nil))
+	if calculatedHash != req.Hash {
+		return fmt.Errorf("invalid hash")
+	}
+
+	return nil
 }
