@@ -1,0 +1,83 @@
+basePath: /
+definitions:
+  internal_api.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      passkey_id:
+        type: string
+    type: object
+  internal_api.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Backend for personal finances
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Flizix API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Returns simple message to validate server is running
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Flizix service OK
+          schema:
+            type: string
+      summary: Check health system
+      tags:
+      - system
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Register new user on DB with name, email and passkey ID.
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_api.UserResponse'
+        "400":
+          description: Invalid JSON
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create new user
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
