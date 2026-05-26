@@ -9,8 +9,9 @@ import (
 )
 
 type Config struct {
-	Queries   *db.Queries
-	JWTSecret string
+	Queries          *db.Queries
+	JWTSecret        string
+	TelegramBotToken string
 }
 
 type CreateUserRequest struct {

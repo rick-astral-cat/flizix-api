@@ -58,8 +58,9 @@ func main() {
 	}
 
 	apiCfg := &api.Config{
-		Queries:   queries,
-		JWTSecret: cfg.JWTSecret,
+		Queries:          queries,
+		JWTSecret:        cfg.JWTSecret,
+		TelegramBotToken: cfg.TelegramBotToken,
 	}
 	apiCfg.RegisterRoutes(mux, cfg.AppEnv)
 
