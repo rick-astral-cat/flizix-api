@@ -9,6 +9,21 @@ definitions:
       passkey_id:
         type: string
     type: object
+  internal_api.TelegramAuthRequest:
+    properties:
+      auth_date:
+        type: integer
+      first_name:
+        type: string
+      hash:
+        type: string
+      id:
+        type: integer
+      photo_url:
+        type: string
+      username:
+        type: string
+    type: object
   internal_api.UserResponse:
     properties:
       email:
@@ -32,6 +47,29 @@ info:
   title: Flizix API
   version: "1.0"
 paths:
+  /auth/telegram:
+    post:
+      consumes:
+      - application/json
+      description: Validate Telegram hash, search or create user emitting a JWT o
+        a cookie.
+      parameters:
+      - description: telegram data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.TelegramAuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api.UserResponse'
+      summary: Login con Telegram
+      tags:
+      - auth
   /health:
     get:
       description: Returns simple message to validate server is running
@@ -45,6 +83,23 @@ paths:
       summary: Check health system
       tags:
       - system
+  /me:
+    get:
+      description: Get userdata using JWT on cookie.
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api.UserResponse'
+        "401":
+          description: Not authorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get profile
+      tags:
+      - users
   /users:
     post:
       consumes:

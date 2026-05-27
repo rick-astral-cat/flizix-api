@@ -3,13 +3,18 @@ package api
 import (
 	"crypto/hmac"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	db "github.com/rick-astral-cat/flizix-api/db/sqlc"
 )
 
 type CustomClaims struct {
@@ -37,11 +42,11 @@ func (api *Config) GenerateToken(userID int64) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(api.JWTSecret)
+	return token.SignedString([]byte(api.JWTSecret))
 }
 
 func (api *Config) ValidateToken(tokenString string) (*CustomClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -84,4 +89,62 @@ func (api *Config) VerifyTelegramHash(req TelegramAuthRequest) error {
 	}
 
 	return nil
+}
+
+// HandleTelegramLogin manage login with Telegram
+// @Summary      Login con Telegram
+// @Description  Validate Telegram hash, search or create user emitting a JWT o a cookie.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        data  body      TelegramAuthRequest  true  "telegram data"
+// @Success      200   {object}  UserResponse
+// @Router       /auth/telegram [post]
+func (api *Config) HandleTelegramLogin(w http.ResponseWriter, r *http.Request) {
+	var req TelegramAuthRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if err := api.VerifyTelegramHash(req); err != nil {
+		http.Error(w, "Invalid hash, not authorized", http.StatusUnauthorized)
+		return
+	}
+
+	tgID := strconv.FormatInt(req.ID, 10)
+	user, err := api.Queries.GetUserByTelegramId(r.Context(), sql.NullString{string(tgID), true})
+	//Create user if not exists
+	if err == sql.ErrNoRows {
+		user, err = api.Queries.CreateUserWithTelegram(r.Context(), db.CreateUserWithTelegramParams{
+			Name:       req.FirstName,
+			Email:      sql.NullString{String: "", Valid: false},
+			TelegramID: sql.NullString{String: tgID, Valid: true},
+		})
+		if err != nil {
+			http.Error(w, "Error creating user with Telegram: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else if err != nil {
+		http.Error(w, "Error on database: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//Generate JWT Token
+	token, err := api.GenerateToken(user.ID)
+	if err != nil {
+		http.Error(w, "Error generating token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    token,
+		Expires:  time.Now().Add(15 * time.Minute),
+		HttpOnly: true,
+		Secure:   false,
+		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
+	})
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(MapUserToResponse(user))
 }

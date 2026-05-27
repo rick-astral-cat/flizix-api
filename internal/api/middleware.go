@@ -19,13 +19,13 @@ func (api *Config) JWTMiddleware(next http.Handler) http.Handler {
 
 		tokenString := cookie.Value
 
-		userID, err := api.ValidateToken(tokenString)
+		claims, err := api.ValidateToken(tokenString)
 		if err != nil {
 			http.Error(w, "Unauthorized, invalid or expired token", http.StatusUnauthorized)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserIDKey, userID)
+		ctx := context.WithValue(r.Context(), UserIDKey, claims.UserID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

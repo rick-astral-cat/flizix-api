@@ -80,3 +80,26 @@ func (api *Config) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 }
+
+// HandleGetProfile return authenticated user data
+// @Summary      Get profile
+// @Description  Get userdata using JWT on cookie.
+// @Tags         users
+// @Security     BearerAuth
+// @Success      200  {object}  UserResponse
+// @Failure      401  {string}  string "Not authorized"
+// @Router       /me [get]
+func (api *Config) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(UserIDKey).(int64)
+	if !ok {
+		http.Error(w, "No user ID found in context", http.StatusInternalServerError)
+		return
+	}
+	user, err := api.Queries.GetUserById(r.Context(), userID)
+	if err != nil {
+		http.Error(w, "Error at getting user, not found : "+err.Error(), http.StatusNotFound)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(MapUserToResponse(user))
+}
