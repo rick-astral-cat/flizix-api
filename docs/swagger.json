@@ -18,6 +18,40 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
+        "/auth/telegram": {
+            "post": {
+                "description": "Validate Telegram hash, search or create user emitting a JWT o a cookie.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login con Telegram",
+                "parameters": [
+                    {
+                        "description": "telegram data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_api.TelegramAuthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api.UserResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Returns simple message to validate server is running",
@@ -31,6 +65,34 @@
                 "responses": {
                     "200": {
                         "description": "Flizix service OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get userdata using JWT on cookie.",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api.UserResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Not authorized",
                         "schema": {
                             "type": "string"
                         }
@@ -96,6 +158,29 @@
                     "type": "string"
                 },
                 "passkey_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_api.TelegramAuthRequest": {
+            "type": "object",
+            "properties": {
+                "auth_date": {
+                    "type": "integer"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "photo_url": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
