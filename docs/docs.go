@@ -24,6 +24,26 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/logout": {
+            "post": {
+                "description": "Delete cookie on browser session sending an expired cookie",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Close session",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/auth/telegram": {
             "post": {
                 "description": "Validate Telegram hash, search or create user emitting a JWT o a cookie.",

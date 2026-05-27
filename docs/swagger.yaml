@@ -47,6 +47,19 @@ info:
   title: Flizix API
   version: "1.0"
 paths:
+  /auth/logout:
+    post:
+      description: Delete cookie on browser session sending an expired cookie
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Close session
+      tags:
+      - auth
   /auth/telegram:
     post:
       consumes:
