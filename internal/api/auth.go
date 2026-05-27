@@ -148,3 +148,22 @@ func (api *Config) HandleTelegramLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(MapUserToResponse(user))
 }
+
+// HandleLogout logout user session
+// @Summary      Close session
+// @Description  Delete cookie on browser session sending an expired cookie
+// @Tags         auth
+// @Success      200  {object}  map[string]string
+// @Router       /auth/logout [post]
+func (api *Config) HandleLogout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		Path:     "/",
+		Secure:   false,
+	})
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "logged out"})
+}
