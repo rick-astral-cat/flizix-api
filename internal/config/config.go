@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -18,6 +19,8 @@ type Config struct {
 	AppPort          string
 	JWTSecret        string
 	TelegramBotToken string
+	EnableCORS       bool
+	AllowedOrigins   []string
 }
 
 func getEnv(key, fallback string) string {
@@ -34,6 +37,15 @@ func (c *Config) validateDev() error {
 	}
 	c.DbUrl = dbUrl
 	c.AppEnv = "development"
+
+	c.EnableCORS = os.Getenv("ENABLE_CORS") == "true"
+	if c.EnableCORS {
+		originsStr := os.Getenv("ALLOWED_ORIGINS")
+		if originsStr == "" {
+			return errors.New("CORS_ALLOWED_ORIGINS environment variable not set")
+		}
+		c.AllowedOrigins = strings.Split(originsStr, ",")
+	}
 
 	jwtSecret := os.Getenv("DEV_JWT_SECRET")
 	if jwtSecret == "" {
@@ -56,6 +68,15 @@ func (c *Config) validateProd() error {
 		return errors.New("DB_URL environment variable not set")
 	}
 	c.DbUrl = dbUrl
+
+	c.EnableCORS = os.Getenv("ENABLE_CORS") == "true"
+	if c.EnableCORS {
+		originsStr := os.Getenv("ALLOWED_ORIGINS")
+		if originsStr == "" {
+			return errors.New("CORS_ALLOWED_ORIGINS environment variable not set")
+		}
+		c.AllowedOrigins = strings.Split(originsStr, ",")
+	}
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {

@@ -12,6 +12,8 @@ type Config struct {
 	Queries          *db.Queries
 	JWTSecret        string
 	TelegramBotToken string
+	EnableCORS       bool
+	AllowedOrigins   []string
 }
 
 type CreateUserRequest struct {
