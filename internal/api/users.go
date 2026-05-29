@@ -15,6 +15,7 @@ type Config struct {
 	TelegramBotToken string
 	EnableCORS       bool
 	AllowedOrigins   []string
+	AppTLS           bool
 }
 
 type CreateUserRequest struct {
