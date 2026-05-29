@@ -141,7 +141,7 @@ func (api *Config) HandleTelegramLogin(w http.ResponseWriter, r *http.Request) {
 		Value:    token,
 		Expires:  time.Now().Add(15 * time.Minute),
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   api.AppTLS,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 	})

@@ -21,6 +21,7 @@ type Config struct {
 	TelegramBotToken string
 	EnableCORS       bool
 	AllowedOrigins   []string
+	AppTLS           bool
 }
 
 func getEnv(key, fallback string) string {
@@ -46,6 +47,8 @@ func (c *Config) validateDev() error {
 		}
 		c.AllowedOrigins = strings.Split(originsStr, ",")
 	}
+
+	c.AppTLS = os.Getenv("APP_TLS") == "true"
 
 	jwtSecret := os.Getenv("DEV_JWT_SECRET")
 	if jwtSecret == "" {
@@ -77,6 +80,8 @@ func (c *Config) validateProd() error {
 		}
 		c.AllowedOrigins = strings.Split(originsStr, ",")
 	}
+
+	c.AppTLS = os.Getenv("APP_TLS") == "true"
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
