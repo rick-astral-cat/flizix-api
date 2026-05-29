@@ -46,23 +46,26 @@ func main() {
 	defer dbConn.Close()
 	queries := db.New(dbConn)
 
-	log.Println("### FLIZIX STARTING ON", cfg.AppEnv, " ###")
-	log.Println("Database URL:", cfg.DbUrl)
-	mux := http.NewServeMux()
-	srv := &http.Server{
-		Addr:         ":" + cfg.AppPort,
-		Handler:      mux,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
-	}
-
 	apiCfg := &api.Config{
 		Queries:          queries,
 		JWTSecret:        cfg.JWTSecret,
 		TelegramBotToken: cfg.TelegramBotToken,
+		EnableCORS:       cfg.EnableCORS,
+		AllowedOrigins:   cfg.AllowedOrigins,
 	}
+
+	log.Println("### FLIZIX STARTING ON", cfg.AppEnv, " ###")
+	log.Println("Database URL:", cfg.DbUrl)
+	mux := http.NewServeMux()
 	apiCfg.RegisterRoutes(mux, cfg.AppEnv)
+	handleWithCORS := apiCfg.CORSMiddleware(mux)
+	srv := &http.Server{
+		Addr:         ":" + cfg.AppPort,
+		Handler:      handleWithCORS,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
 
 	go func() {
 		log.Printf("Listening on port %s", cfg.AppPort)
