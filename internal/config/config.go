@@ -31,48 +31,25 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-func (c *Config) validateDev() error {
-	dbUrl := os.Getenv("DEV_DB_URL")
-	if dbUrl == "" {
-		return errors.New("DEV_DB_URL environment variable not set")
+func (c *Config) checkRequiredFields() error {
+	if c.TelegramBotToken == "" {
+		return errors.New("TelegramBotToken environment variable not set")
 	}
-	c.DbUrl = dbUrl
-	c.AppEnv = "development"
-
-	c.EnableCORS = os.Getenv("ENABLE_CORS") == "true"
-	if c.EnableCORS {
-		originsStr := os.Getenv("ALLOWED_ORIGINS")
-		if originsStr == "" {
-			return errors.New("CORS_ALLOWED_ORIGINS environment variable not set")
-		}
-		c.AllowedOrigins = strings.Split(originsStr, ",")
+	if c.JWTSecret == "" {
+		return errors.New("JWTSecret environment variable not set")
 	}
-
-	c.AppTLS = os.Getenv("APP_TLS") == "true"
-
-	jwtSecret := os.Getenv("DEV_JWT_SECRET")
-	if jwtSecret == "" {
-		return errors.New("DEV_JWT_SECRET environment variable not set")
+	if c.DbUrl == "" {
+		return errors.New("DB_URL environment variable not set")
 	}
-	c.JWTSecret = jwtSecret
-
-	tgToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-	if tgToken == "" {
-		return errors.New("TELEGRAM_BOT_TOKEN environment variable not set")
-	}
-	c.TelegramBotToken = tgToken
-
 	return nil
 }
 
-func (c *Config) validateProd() error {
-	dbUrl := os.Getenv("DB_URL")
-	if dbUrl == "" {
-		return errors.New("DB_URL environment variable not set")
-	}
-	c.DbUrl = dbUrl
-
+func (c *Config) validate() error {
+	// Common environment variables
+	c.TelegramBotToken = os.Getenv("TELEGRAM_BOT_TOKEN")
+	c.AppTLS = os.Getenv("APP_TLS") == "true"
 	c.EnableCORS = os.Getenv("ENABLE_CORS") == "true"
+
 	if c.EnableCORS {
 		originsStr := os.Getenv("ALLOWED_ORIGINS")
 		if originsStr == "" {
@@ -81,19 +58,21 @@ func (c *Config) validateProd() error {
 		c.AllowedOrigins = strings.Split(originsStr, ",")
 	}
 
-	c.AppTLS = os.Getenv("APP_TLS") == "true"
-
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		return errors.New("JWT_SECRET environment variable not set")
+	// Get strict environment variables
+	switch c.AppEnv {
+	case EnvDevelopment:
+		c.DbUrl = os.Getenv("DEV_DB_URL")
+		c.JWTSecret = os.Getenv("DEV_JWT_SECRET")
+	case EnvProduction:
+		c.DbUrl = os.Getenv("DB_URL")
+		c.JWTSecret = os.Getenv("JWT_SECRET")
+	default:
+		return errors.New("unknown app environment")
 	}
-	c.JWTSecret = jwtSecret
 
-	tgToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-	if tgToken == "" {
-		return errors.New("TELEGRAM_BOT_TOKEN environment variable not set")
+	if err := c.checkRequiredFields(); err != nil {
+		return err
 	}
-	c.TelegramBotToken = tgToken
 
 	return nil
 }
@@ -101,28 +80,14 @@ func (c *Config) validateProd() error {
 func Load() (*Config, error) {
 	_ = godotenv.Load() //Don´t fail in case system variables such Docker or Kubernates
 
+	env := getEnv("APP_ENV", EnvDevelopment)
 	cfg := &Config{
-		AppEnv:  "",
-		DbUrl:   "",
+		AppEnv:  env,
 		AppPort: getEnv("APP_PORT", "8080"),
 	}
 
-	env := os.Getenv("APP_ENV")
-	switch env {
-	case EnvProduction:
-		cfg.AppEnv = EnvProduction
-		err := cfg.validateProd()
-		if err != nil {
-			return nil, err
-		}
-	case EnvDevelopment:
-		cfg.AppEnv = EnvDevelopment
-		err := cfg.validateDev()
-		if err != nil {
-			return nil, err
-		}
-	default:
-		return nil, errors.New("invalid APP_ENV")
+	if err := cfg.validate(); err != nil {
+		return nil, err
 	}
 
 	return cfg, nil
