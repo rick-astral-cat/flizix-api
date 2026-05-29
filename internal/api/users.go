@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	db "github.com/rick-astral-cat/flizix-api/db/sqlc"
+	"github.com/rick-astral-cat/flizix-api/internal/config"
 )
 
 type Config struct {
@@ -26,6 +27,16 @@ type UserResponse struct {
 	ID    int64  `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email,omitempty"`
+}
+
+func NewConfig(queries *db.Queries, cfg *config.Config) *Config {
+	return &Config{
+		Queries:          queries,
+		JWTSecret:        cfg.JWTSecret,
+		TelegramBotToken: cfg.TelegramBotToken,
+		EnableCORS:       cfg.EnableCORS,
+		AllowedOrigins:   cfg.AllowedOrigins,
+	}
 }
 
 func MapUserToResponse(user db.User) UserResponse {

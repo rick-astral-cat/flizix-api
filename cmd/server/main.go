@@ -46,13 +46,7 @@ func main() {
 	defer dbConn.Close()
 	queries := db.New(dbConn)
 
-	apiCfg := &api.Config{
-		Queries:          queries,
-		JWTSecret:        cfg.JWTSecret,
-		TelegramBotToken: cfg.TelegramBotToken,
-		EnableCORS:       cfg.EnableCORS,
-		AllowedOrigins:   cfg.AllowedOrigins,
-	}
+	apiCfg := api.NewConfig(queries, cfg)
 
 	log.Println("### FLIZIX STARTING ON", cfg.AppEnv, " ###")
 	log.Println("Database URL:", cfg.DbUrl)
