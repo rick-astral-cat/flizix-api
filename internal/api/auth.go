@@ -25,6 +25,7 @@ type CustomClaims struct {
 type TelegramAuthRequest struct {
 	ID        int64  `json:"id"`
 	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 	Username  string `json:"username"`
 	PhotoURL  string `json:"photo_url"`
 	AuthDate  int64  `json:"auth_date"`
@@ -72,6 +73,9 @@ func (api *Config) VerifyTelegramHash(req TelegramAuthRequest) error {
 	}
 	if req.Username != "" {
 		data = append(data, fmt.Sprintf("username=%s", req.Username))
+	}
+	if req.LastName != "" {
+		data = append(data, fmt.Sprintf("last_name=%s", req.LastName))
 	}
 	if req.PhotoURL != "" {
 		data = append(data, fmt.Sprintf("photo_url=%s", req.PhotoURL))
