@@ -6,16 +6,10 @@ import (
 	"net/http"
 
 	db "github.com/rick-astral-cat/flizix-api/db/sqlc"
-	"github.com/rick-astral-cat/flizix-api/internal/config"
 )
 
-type Config struct {
-	Queries          *db.Queries
-	JWTSecret        string
-	TelegramBotToken string
-	EnableCORS       bool
-	AllowedOrigins   []string
-	AppTLS           bool
+type UserHandler struct {
+	Queries *db.Queries
 }
 
 type CreateUserRequest struct {
@@ -30,13 +24,9 @@ type UserResponse struct {
 	Email string `json:"email,omitempty"`
 }
 
-func NewConfig(queries *db.Queries, cfg *config.Config) *Config {
-	return &Config{
-		Queries:          queries,
-		JWTSecret:        cfg.JWTSecret,
-		TelegramBotToken: cfg.TelegramBotToken,
-		EnableCORS:       cfg.EnableCORS,
-		AllowedOrigins:   cfg.AllowedOrigins,
+func NewUserHandler(queries *db.Queries) *UserHandler {
+	return &UserHandler{
+		Queries: queries,
 	}
 }
 
@@ -59,7 +49,7 @@ func MapUserToResponse(user db.User) UserResponse {
 // @Failure      400   {string}  string  "Invalid JSON"
 // @Failure      500   {string}  string  "Internal Server Error"
 // @Router       /users [post]
-func (api *Config) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -77,7 +67,7 @@ func (api *Config) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		Valid:  true,
 	}
 
-	user, err := api.Queries.CreateUserWithPasskey(r.Context(), db.CreateUserWithPasskeyParams{
+	user, err := h.Queries.CreateUserWithPasskey(r.Context(), db.CreateUserWithPasskeyParams{
 		Name:      req.Name,
 		Email:     email,
 		PasskeyID: passkey,
@@ -103,13 +93,13 @@ func (api *Config) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 // @Success      200  {object}  UserResponse
 // @Failure      401  {string}  string "Not authorized"
 // @Router       /me [get]
-func (api *Config) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(UserIDKey).(int64)
 	if !ok {
 		http.Error(w, "No user ID found in context", http.StatusInternalServerError)
 		return
 	}
-	user, err := api.Queries.GetUserById(r.Context(), userID)
+	user, err := h.Queries.GetUserById(r.Context(), userID)
 	if err != nil {
 		http.Error(w, "Error at getting user, not found : "+err.Error(), http.StatusNotFound)
 	}

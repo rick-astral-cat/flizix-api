@@ -32,8 +32,24 @@ type TelegramAuthRequest struct {
 	Hash      string `json:"hash"`
 }
 
+type AuthHandler struct {
+	Queries          *db.Queries
+	JWTSecret        string
+	TelegramBotToken string
+	AppTLS           bool
+}
+
+func NewAuthHandler(Queries *db.Queries, JWTSecret string, TelegramBotToken string, AppTLS bool) *AuthHandler {
+	return &AuthHandler{
+		Queries:          Queries,
+		JWTSecret:        JWTSecret,
+		TelegramBotToken: TelegramBotToken,
+		AppTLS:           AppTLS,
+	}
+}
+
 // GenerateToken Generate new signed JWT
-func (api *Config) GenerateToken(userID int64) (string, error) {
+func (h *AuthHandler) GenerateToken(userID int64) (string, error) {
 	claims := CustomClaims{
 		userID,
 		jwt.RegisteredClaims{
@@ -43,15 +59,15 @@ func (api *Config) GenerateToken(userID int64) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(api.JWTSecret))
+	return token.SignedString([]byte(h.JWTSecret))
 }
 
-func (api *Config) ValidateToken(tokenString string) (*CustomClaims, error) {
+func (h *AuthHandler) ValidateToken(tokenString string) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(api.JWTSecret), nil
+		return []byte(h.JWTSecret), nil
 	})
 
 	if err != nil {
@@ -65,7 +81,7 @@ func (api *Config) ValidateToken(tokenString string) (*CustomClaims, error) {
 	return nil, fmt.Errorf("invalid token")
 }
 
-func (api *Config) VerifyTelegramHash(req TelegramAuthRequest) error {
+func (h *AuthHandler) VerifyTelegramHash(req TelegramAuthRequest) error {
 	data := []string{
 		fmt.Sprintf("auth_date=%d", req.AuthDate),
 		fmt.Sprintf("first_name=%s", req.FirstName),
@@ -83,11 +99,11 @@ func (api *Config) VerifyTelegramHash(req TelegramAuthRequest) error {
 	sort.Strings(data)
 	dataCheckString := strings.Join(data, "\n")
 	sha := sha256.New()
-	sha.Write([]byte(api.TelegramBotToken))
+	sha.Write([]byte(h.TelegramBotToken))
 	secretKey := sha.Sum(nil)
-	h := hmac.New(sha256.New, secretKey)
-	h.Write([]byte(dataCheckString))
-	calculatedHash := hex.EncodeToString(h.Sum(nil))
+	hm := hmac.New(sha256.New, secretKey)
+	hm.Write([]byte(dataCheckString))
+	calculatedHash := hex.EncodeToString(hm.Sum(nil))
 	if calculatedHash != req.Hash {
 		return fmt.Errorf("invalid hash")
 	}
@@ -104,23 +120,23 @@ func (api *Config) VerifyTelegramHash(req TelegramAuthRequest) error {
 // @Param        data  body      TelegramAuthRequest  true  "telegram data"
 // @Success      200   {object}  UserResponse
 // @Router       /auth/telegram [post]
-func (api *Config) HandleTelegramLogin(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleTelegramLogin(w http.ResponseWriter, r *http.Request) {
 	var req TelegramAuthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 
-	if err := api.VerifyTelegramHash(req); err != nil {
+	if err := h.VerifyTelegramHash(req); err != nil {
 		http.Error(w, "Invalid hash, not authorized", http.StatusUnauthorized)
 		return
 	}
 
 	tgID := strconv.FormatInt(req.ID, 10)
-	user, err := api.Queries.GetUserByTelegramId(r.Context(), sql.NullString{string(tgID), true})
+	user, err := h.Queries.GetUserByTelegramId(r.Context(), sql.NullString{string(tgID), true})
 	//Create user if not exists
 	if err == sql.ErrNoRows {
-		user, err = api.Queries.CreateUserWithTelegram(r.Context(), db.CreateUserWithTelegramParams{
+		user, err = h.Queries.CreateUserWithTelegram(r.Context(), db.CreateUserWithTelegramParams{
 			Name:       req.FirstName,
 			Email:      sql.NullString{String: "", Valid: false},
 			TelegramID: sql.NullString{String: tgID, Valid: true},
@@ -135,7 +151,7 @@ func (api *Config) HandleTelegramLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Generate JWT Token
-	token, err := api.GenerateToken(user.ID)
+	token, err := h.GenerateToken(user.ID)
 	if err != nil {
 		http.Error(w, "Error generating token: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -145,7 +161,7 @@ func (api *Config) HandleTelegramLogin(w http.ResponseWriter, r *http.Request) {
 		Value:    token,
 		Expires:  time.Now().Add(15 * time.Minute),
 		HttpOnly: true,
-		Secure:   api.AppTLS,
+		Secure:   h.AppTLS,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 	})
@@ -159,7 +175,7 @@ func (api *Config) HandleTelegramLogin(w http.ResponseWriter, r *http.Request) {
 // @Tags         auth
 // @Success      200  {object}  map[string]string
 // @Router       /auth/logout [post]
-func (api *Config) HandleLogout(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "access_token",
 		Value:    "",

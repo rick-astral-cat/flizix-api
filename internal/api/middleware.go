@@ -9,7 +9,21 @@ type contextKey string
 
 const UserIDKey contextKey = "userID"
 
-func (api *Config) JWTMiddleware(next http.Handler) http.Handler {
+type MiddlewareHandler struct {
+	Auth           *AuthHandler
+	EnableCORS     bool
+	AllowedOrigins []string
+}
+
+func NewMiddlewareHandler(auth *AuthHandler, enableCORS bool, allowedOrigins []string) *MiddlewareHandler {
+	return &MiddlewareHandler{
+		Auth:           auth,
+		EnableCORS:     enableCORS,
+		AllowedOrigins: allowedOrigins,
+	}
+}
+
+func (m *MiddlewareHandler) JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("access_token")
 		if err != nil {
@@ -19,7 +33,7 @@ func (api *Config) JWTMiddleware(next http.Handler) http.Handler {
 
 		tokenString := cookie.Value
 
-		claims, err := api.ValidateToken(tokenString)
+		claims, err := m.Auth.ValidateToken(tokenString)
 		if err != nil {
 			http.Error(w, "Unauthorized, invalid or expired token", http.StatusUnauthorized)
 			return
@@ -30,15 +44,15 @@ func (api *Config) JWTMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (api *Config) CORSMiddleware(next http.Handler) http.Handler {
+func (m *MiddlewareHandler) CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !api.EnableCORS {
+		if !m.EnableCORS {
 			next.ServeHTTP(w, r)
 			return
 		}
 		origin := r.Header.Get("Origin")
 		isAllowed := false
-		for _, o := range api.AllowedOrigins {
+		for _, o := range m.AllowedOrigins {
 			if o == origin {
 				isAllowed = true
 				break
