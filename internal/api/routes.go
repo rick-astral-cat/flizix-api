@@ -7,17 +7,17 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-func (api *Config) RegisterRoutes(mux *http.ServeMux, env string) {
-	mux.HandleFunc("POST /users", api.HandleCreateUser)
-	mux.HandleFunc("GET /health", api.HandleHealth)
-	mux.HandleFunc("POST /auth/telegram", api.HandleTelegramLogin)
-	mux.HandleFunc("POST /auth/logout", api.HandleLogout)
+func RegisterRoutes(mux *http.ServeMux, env string, userH *UserHandler, authH *AuthHandler, midH *MiddlewareHandler) {
+	mux.HandleFunc("POST /users", userH.HandleCreateUser)
+	mux.HandleFunc("GET /health", HandleHealth)
+	mux.HandleFunc("POST /auth/telegram", authH.HandleTelegramLogin)
+	mux.HandleFunc("POST /auth/logout", authH.HandleLogout)
 
 	if env == "development" {
 		mux.Handle("GET /swagger/", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
 	}
 
 	// Private Routes
-	profileHandler := http.HandlerFunc(api.HandleGetProfile)
-	mux.Handle("GET /me", api.JWTMiddleware(profileHandler))
+	profileHandler := http.HandlerFunc(userH.HandleGetProfile)
+	mux.Handle("GET /me", midH.JWTMiddleware(profileHandler))
 }

@@ -45,14 +45,16 @@ func main() {
 	}
 	defer dbConn.Close()
 	queries := db.New(dbConn)
-
-	apiCfg := api.NewConfig(queries, cfg)
+	
+	userH := api.NewUserHandler(queries)
+	authH := api.NewAuthHandler(queries, cfg.JWTSecret, cfg.TelegramBotToken, cfg.AppTLS)
+	midH := api.NewMiddlewareHandler(authH, cfg.EnableCORS, cfg.AllowedOrigins)
 
 	log.Println("### FLIZIX STARTING ON", cfg.AppEnv, " ###")
 	log.Println("Database URL:", cfg.DbUrl)
 	mux := http.NewServeMux()
-	apiCfg.RegisterRoutes(mux, cfg.AppEnv)
-	handleWithCORS := apiCfg.CORSMiddleware(mux)
+	api.RegisterRoutes(mux, cfg.AppEnv, userH, authH, midH)
+	handleWithCORS := midH.CORSMiddleware(mux)
 	srv := &http.Server{
 		Addr:         ":" + cfg.AppPort,
 		Handler:      handleWithCORS,
