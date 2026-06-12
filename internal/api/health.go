@@ -9,7 +9,9 @@ import "net/http"
 // @Produce plain
 // @Success	200  {string}  string  "Flizix service OK"
 // @Router	/health [get]
-func HandleHealth(w http.ResponseWriter, r *http.Request) {
+func HandleHealth(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Flizix service OK"))
+	if _, err := w.Write([]byte("Flizix service OK")); err != nil {
+		_ = err
+	}
 }

@@ -123,12 +123,12 @@ func (h *AuthHandler) VerifyTelegramHash(req TelegramAuthRequest) error {
 func (h *AuthHandler) HandleTelegramLogin(w http.ResponseWriter, r *http.Request) {
 	var req TelegramAuthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		respondWithError(w, http.StatusBadRequest, "Invalid JSON")
 		return
 	}
 
 	if err := h.VerifyTelegramHash(req); err != nil {
-		http.Error(w, "Invalid hash, not authorized", http.StatusUnauthorized)
+		respondWithError(w, http.StatusBadRequest, "Invalid hash, not authorized")
 		return
 	}
 
@@ -142,18 +142,18 @@ func (h *AuthHandler) HandleTelegramLogin(w http.ResponseWriter, r *http.Request
 			TelegramID: sql.NullString{String: tgID, Valid: true},
 		})
 		if err != nil {
-			http.Error(w, "Error creating user with Telegram: "+err.Error(), http.StatusInternalServerError)
+			respondWithError(w, http.StatusInternalServerError, "Error creating user with Telegram: "+err.Error())
 			return
 		}
 	} else if err != nil {
-		http.Error(w, "Error on database: "+err.Error(), http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Error on database: "+err.Error())
 		return
 	}
 
 	//Generate JWT Token
 	token, err := h.GenerateToken(user.ID)
 	if err != nil {
-		http.Error(w, "Error generating token: "+err.Error(), http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Error generating token: "+err.Error())
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
@@ -165,8 +165,7 @@ func (h *AuthHandler) HandleTelegramLogin(w http.ResponseWriter, r *http.Request
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 	})
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(MapUserToResponse(user))
+	respondWithJSON(w, http.StatusOK, MapUserToResponse(user))
 }
 
 // HandleLogout logout user session
@@ -184,6 +183,5 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		Secure:   false,
 	})
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "logged out"})
+	respondWithJSON(w, http.StatusOK, map[string]string{"message": "logged out"})
 }
