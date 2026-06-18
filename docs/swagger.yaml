@@ -1,6 +1,30 @@
 basePath: /
 definitions:
-  internal_api.CreateUserRequest:
+  api.CardResponse:
+    properties:
+      credit_limit:
+        type: integer
+      cutoff_date:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  api.CreateCardRequest:
+    properties:
+      credit_limit:
+        type: integer
+      cutoff_date:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  api.CreateUserRequest:
     properties:
       email:
         type: string
@@ -9,7 +33,7 @@ definitions:
       passkey_id:
         type: string
     type: object
-  internal_api.TelegramAuthRequest:
+  api.TelegramAuthRequest:
     properties:
       auth_date:
         type: integer
@@ -19,12 +43,14 @@ definitions:
         type: string
       id:
         type: integer
+      last_name:
+        type: string
       photo_url:
         type: string
       username:
         type: string
     type: object
-  internal_api.UserResponse:
+  api.UserResponse:
     properties:
       email:
         type: string
@@ -72,17 +98,45 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/internal_api.TelegramAuthRequest'
+          $ref: '#/definitions/api.TelegramAuthRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_api.UserResponse'
+            $ref: '#/definitions/api.UserResponse'
       summary: Login con Telegram
       tags:
       - auth
+  /cards:
+    post:
+      consumes:
+      - application/json
+      description: Create a credit or debit card for the authenticated user
+      parameters:
+      - description: Card data
+        in: body
+        name: card
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateCardRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.CardResponse'
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new card
+      tags:
+      - cards
   /health:
     get:
       description: Returns simple message to validate server is running
@@ -103,7 +157,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_api.UserResponse'
+            $ref: '#/definitions/api.UserResponse'
         "401":
           description: Not authorized
           schema:
@@ -124,14 +178,14 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/internal_api.CreateUserRequest'
+          $ref: '#/definitions/api.CreateUserRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/internal_api.UserResponse'
+            $ref: '#/definitions/api.UserResponse'
         "400":
           description: Invalid JSON
           schema:
