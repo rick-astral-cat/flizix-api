@@ -58,7 +58,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api.TelegramAuthRequest"
+                            "$ref": "#/definitions/api.TelegramAuthRequest"
                         }
                     }
                 ],
@@ -66,7 +66,52 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api.UserResponse"
+                            "$ref": "#/definitions/api.UserResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/cards": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a credit or debit card for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cards"
+                ],
+                "summary": "Create a new card",
+                "parameters": [
+                    {
+                        "description": "Card data",
+                        "name": "card",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/api.CardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -108,7 +153,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api.UserResponse"
+                            "$ref": "#/definitions/api.UserResponse"
                         }
                     },
                     "401": {
@@ -140,7 +185,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api.CreateUserRequest"
+                            "$ref": "#/definitions/api.CreateUserRequest"
                         }
                     }
                 ],
@@ -148,7 +193,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_api.UserResponse"
+                            "$ref": "#/definitions/api.UserResponse"
                         }
                     },
                     "400": {
@@ -168,7 +213,44 @@
         }
     },
     "definitions": {
-        "internal_api.CreateUserRequest": {
+        "api.CardResponse": {
+            "type": "object",
+            "properties": {
+                "credit_limit": {
+                    "type": "integer"
+                },
+                "cutoff_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.CreateCardRequest": {
+            "type": "object",
+            "properties": {
+                "credit_limit": {
+                    "type": "integer"
+                },
+                "cutoff_date": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.CreateUserRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -182,7 +264,7 @@
                 }
             }
         },
-        "internal_api.TelegramAuthRequest": {
+        "api.TelegramAuthRequest": {
             "type": "object",
             "properties": {
                 "auth_date": {
@@ -197,6 +279,9 @@
                 "id": {
                     "type": "integer"
                 },
+                "last_name": {
+                    "type": "string"
+                },
                 "photo_url": {
                     "type": "string"
                 },
@@ -205,7 +290,7 @@
                 }
             }
         },
-        "internal_api.UserResponse": {
+        "api.UserResponse": {
             "type": "object",
             "properties": {
                 "email": {

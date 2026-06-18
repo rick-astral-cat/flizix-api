@@ -64,7 +64,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api.TelegramAuthRequest"
+                            "$ref": "#/definitions/api.TelegramAuthRequest"
                         }
                     }
                 ],
@@ -72,7 +72,52 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api.UserResponse"
+                            "$ref": "#/definitions/api.UserResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/cards": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a credit or debit card for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cards"
+                ],
+                "summary": "Create a new card",
+                "parameters": [
+                    {
+                        "description": "Card data",
+                        "name": "card",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/api.CardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -114,7 +159,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api.UserResponse"
+                            "$ref": "#/definitions/api.UserResponse"
                         }
                     },
                     "401": {
@@ -146,7 +191,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api.CreateUserRequest"
+                            "$ref": "#/definitions/api.CreateUserRequest"
                         }
                     }
                 ],
@@ -154,7 +199,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_api.UserResponse"
+                            "$ref": "#/definitions/api.UserResponse"
                         }
                     },
                     "400": {
@@ -174,7 +219,44 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "internal_api.CreateUserRequest": {
+        "api.CardResponse": {
+            "type": "object",
+            "properties": {
+                "credit_limit": {
+                    "type": "integer"
+                },
+                "cutoff_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.CreateCardRequest": {
+            "type": "object",
+            "properties": {
+                "credit_limit": {
+                    "type": "integer"
+                },
+                "cutoff_date": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.CreateUserRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -188,7 +270,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api.TelegramAuthRequest": {
+        "api.TelegramAuthRequest": {
             "type": "object",
             "properties": {
                 "auth_date": {
@@ -203,6 +285,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "last_name": {
+                    "type": "string"
+                },
                 "photo_url": {
                     "type": "string"
                 },
@@ -211,7 +296,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api.UserResponse": {
+        "api.UserResponse": {
             "type": "object",
             "properties": {
                 "email": {
