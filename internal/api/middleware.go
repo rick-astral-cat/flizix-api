@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"strings"
 )
 
 type contextKey string
@@ -25,13 +26,25 @@ func NewMiddlewareHandler(auth *AuthHandler, enableCORS bool, allowedOrigins []s
 
 func (m *MiddlewareHandler) JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		var tokenString string
+
 		cookie, err := r.Cookie("access_token")
-		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
+		if err == nil {
+			tokenString = cookie.Value
 		}
 
-		tokenString := cookie.Value
+		if tokenString == "" {
+			authHeader := r.Header.Get("Authorization")
+			if strings.HasPrefix(authHeader, "Bearer ") {
+				tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+			}
+		}
+
+		if tokenString == "" {
+			respondWithError(w, http.StatusUnauthorized, "Unauthorized")
+			return
+		}
 
 		claims, err := m.Auth.ValidateToken(tokenString)
 		if err != nil {
