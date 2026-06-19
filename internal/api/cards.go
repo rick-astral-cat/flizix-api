@@ -98,7 +98,7 @@ func (h *CardHandler) HandleCreateCard(w http.ResponseWriter, r *http.Request) {
 // @Success      200  {array}   CardResponse
 // @Failure      401  {string}  string "Not authorized"
 // @Security     BearerAuth
-// @Router       /cards [get
+// @Router       /cards [get]
 func (h *CardHandler) HandleListCards(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(UserIDKey).(int64)
 	if !ok {
