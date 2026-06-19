@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -166,6 +167,54 @@ func (h *AuthHandler) HandleTelegramLogin(w http.ResponseWriter, r *http.Request
 		SameSite: http.SameSiteLaxMode,
 	})
 	respondWithJSON(w, http.StatusOK, MapUserToResponse(user))
+}
+
+// HandleDevLogin Manage simulated login for development environment.
+// @Summary      Development login
+// @Description  Omits Telegram validation and generate a JWT token for a testing user.
+// @Tags         auth
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Router       /auth/dev-login [post]
+func (h *AuthHandler) HandleDevLogin(w http.ResponseWriter, r *http.Request) {
+	tgID := "dev_test_user"
+	user, err := h.Queries.GetUserByTelegramId(r.Context(), sql.NullString{string(tgID), true})
+	if errors.Is(err, sql.ErrNoRows) {
+		user, err = h.Queries.CreateUserWithTelegram(r.Context(), db.CreateUserWithTelegramParams{
+			Name:       "Test User",
+			Email:      sql.NullString{String: "dev@example.com", Valid: false},
+			TelegramID: sql.NullString{String: tgID, Valid: true},
+		})
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Error creating user with Telegram: "+err.Error())
+			return
+		}
+	} else if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error on database: "+err.Error())
+		return
+	}
+
+	token, err := h.GenerateToken(user.ID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error generating token: "+err.Error())
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    token,
+		Expires:  time.Now().Add(1 * time.Hour),
+		HttpOnly: true,
+		Secure:   h.AppTLS,
+		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	respondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"user":  MapUserToResponse(user),
+		"token": token,
+	})
+
 }
 
 // HandleLogout logout user session
