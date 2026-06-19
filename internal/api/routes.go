@@ -15,6 +15,7 @@ func RegisterRoutes(mux *http.ServeMux, env string, userH *UserHandler, authH *A
 
 	if env == "development" {
 		mux.Handle("GET /swagger/", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
+		mux.HandleFunc("POST /auth/dev-login", authH.HandleDevLogin)
 	}
 
 	// Private Routes
