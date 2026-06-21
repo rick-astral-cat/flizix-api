@@ -8,6 +8,14 @@ import (
 	"database/sql"
 )
 
+type Account struct {
+	ID        int64          `json:"id"`
+	Name      string         `json:"name"`
+	Type      string         `json:"type"`
+	UserID    sql.NullInt64  `json:"user_id"`
+	DeletedAt sql.NullString `json:"deleted_at"`
+}
+
 type AdditionalIncome struct {
 	ID          int64          `json:"id"`
 	Description string         `json:"description"`
@@ -30,7 +38,8 @@ type Card struct {
 	Name        string         `json:"name"`
 	Type        string         `json:"type"`
 	CreditLimit sql.NullInt64  `json:"credit_limit"`
-	CutoffDate  string         `json:"cutoff_date"`
+	CutoffDate  sql.NullString `json:"cutoff_date"`
+	AccountID   sql.NullInt64  `json:"account_id"`
 	UserID      sql.NullInt64  `json:"user_id"`
 	DeletedAt   sql.NullString `json:"deleted_at"`
 }
@@ -103,6 +112,7 @@ type Purchase struct {
 	CarryOverNextMonth sql.NullInt64  `json:"carry_over_next_month"`
 	Comment            sql.NullString `json:"comment"`
 	CardID             sql.NullInt64  `json:"card_id"`
+	AccountID          sql.NullInt64  `json:"account_id"`
 	ProjectID          sql.NullInt64  `json:"project_id"`
 	UserID             sql.NullInt64  `json:"user_id"`
 	DeletedAt          sql.NullString `json:"deleted_at"`
