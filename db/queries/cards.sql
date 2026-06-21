@@ -4,8 +4,9 @@ INSERT INTO cards (
     type,
     credit_limit,
     cutoff_date,
+    account_id,
     user_id
-) VALUES (?,?,?,?,?)
+) VALUES (?,?,?,?,?,?)
 RETURNING *;
 
 -- name: GetCardByID :one

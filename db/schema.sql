@@ -22,12 +22,21 @@ CREATE TABLE projects (
     deleted_at TEXT
 );
 
+CREATE TABLE accounts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    user_id INTEGER REFERENCES users (id),
+    deleted_at TEXT
+);
+
 CREATE TABLE cards (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
     credit_limit INTEGER,
-    cutoff_date TEXT NOT NULL,
+    cutoff_date TEXT,
+    account_id INTEGER REFERENCES accounts (id),
     user_id INTEGER REFERENCES users (id),
     deleted_at TEXT
 );
@@ -68,6 +77,7 @@ CREATE TABLE purchases (
     carry_over_next_month INTEGER DEFAULT 0,
     comment TEXT,
     card_id INTEGER REFERENCES cards (id),
+    account_id INTEGER REFERENCES accounts (id),
     project_id INTEGER REFERENCES projects (id),
     user_id INTEGER REFERENCES users (id),
     deleted_at TEXT

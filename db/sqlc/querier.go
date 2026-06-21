@@ -10,16 +10,19 @@ import (
 )
 
 type Querier interface {
+	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateCard(ctx context.Context, arg CreateCardParams) (Card, error)
 	CreateUserWithPasskey(ctx context.Context, arg CreateUserWithPasskeyParams) (User, error)
 	// Initial user registration
 	CreateUserWithTelegram(ctx context.Context, arg CreateUserWithTelegramParams) (User, error)
+	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetCardByID(ctx context.Context, arg GetCardByIDParams) (Card, error)
 	GetUserByEmail(ctx context.Context, email sql.NullString) (User, error)
 	// Used to get user profile once registered
 	GetUserById(ctx context.Context, id int64) (User, error)
 	GetUserByPassKey(ctx context.Context, passkeyID sql.NullString) (User, error)
 	GetUserByTelegramId(ctx context.Context, telegramID sql.NullString) (User, error)
+	ListAccountsByUser(ctx context.Context, userID sql.NullInt64) ([]Account, error)
 	ListCardsByUser(ctx context.Context, userID sql.NullInt64) ([]Card, error)
 	SoftDeleteCard(ctx context.Context, arg SoftDeleteCardParams) error
 	SoftDeleteUser(ctx context.Context, id int64) error

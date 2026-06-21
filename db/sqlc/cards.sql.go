@@ -16,17 +16,19 @@ INSERT INTO cards (
     type,
     credit_limit,
     cutoff_date,
+    account_id,
     user_id
-) VALUES (?,?,?,?,?)
-RETURNING id, name, type, credit_limit, cutoff_date, user_id, deleted_at
+) VALUES (?,?,?,?,?,?)
+RETURNING id, name, type, credit_limit, cutoff_date, account_id, user_id, deleted_at
 `
 
 type CreateCardParams struct {
-	Name        string        `json:"name"`
-	Type        string        `json:"type"`
-	CreditLimit sql.NullInt64 `json:"credit_limit"`
-	CutoffDate  string        `json:"cutoff_date"`
-	UserID      sql.NullInt64 `json:"user_id"`
+	Name        string         `json:"name"`
+	Type        string         `json:"type"`
+	CreditLimit sql.NullInt64  `json:"credit_limit"`
+	CutoffDate  sql.NullString `json:"cutoff_date"`
+	AccountID   sql.NullInt64  `json:"account_id"`
+	UserID      sql.NullInt64  `json:"user_id"`
 }
 
 func (q *Queries) CreateCard(ctx context.Context, arg CreateCardParams) (Card, error) {
@@ -35,6 +37,7 @@ func (q *Queries) CreateCard(ctx context.Context, arg CreateCardParams) (Card, e
 		arg.Type,
 		arg.CreditLimit,
 		arg.CutoffDate,
+		arg.AccountID,
 		arg.UserID,
 	)
 	var i Card
@@ -44,6 +47,7 @@ func (q *Queries) CreateCard(ctx context.Context, arg CreateCardParams) (Card, e
 		&i.Type,
 		&i.CreditLimit,
 		&i.CutoffDate,
+		&i.AccountID,
 		&i.UserID,
 		&i.DeletedAt,
 	)
@@ -51,7 +55,7 @@ func (q *Queries) CreateCard(ctx context.Context, arg CreateCardParams) (Card, e
 }
 
 const getCardByID = `-- name: GetCardByID :one
-SELECT id, name, type, credit_limit, cutoff_date, user_id, deleted_at FROM cards
+SELECT id, name, type, credit_limit, cutoff_date, account_id, user_id, deleted_at FROM cards
 WHERE id = ? AND user_id = ? AND deleted_at IS NULL
 LIMIT 1
 `
@@ -70,6 +74,7 @@ func (q *Queries) GetCardByID(ctx context.Context, arg GetCardByIDParams) (Card,
 		&i.Type,
 		&i.CreditLimit,
 		&i.CutoffDate,
+		&i.AccountID,
 		&i.UserID,
 		&i.DeletedAt,
 	)
@@ -77,7 +82,7 @@ func (q *Queries) GetCardByID(ctx context.Context, arg GetCardByIDParams) (Card,
 }
 
 const listCardsByUser = `-- name: ListCardsByUser :many
-SELECT id, name, type, credit_limit, cutoff_date, user_id, deleted_at FROM cards
+SELECT id, name, type, credit_limit, cutoff_date, account_id, user_id, deleted_at FROM cards
 WHERE user_id = ? AND deleted_at IS NULL
 ORDER BY name ASC
 `
@@ -97,6 +102,7 @@ func (q *Queries) ListCardsByUser(ctx context.Context, userID sql.NullInt64) ([]
 			&i.Type,
 			&i.CreditLimit,
 			&i.CutoffDate,
+			&i.AccountID,
 			&i.UserID,
 			&i.DeletedAt,
 		); err != nil {
@@ -135,16 +141,16 @@ SET name = ?,
     credit_limit = ?,
     cutoff_date = ?
 WHERE id = ? AND user_id = ? AND deleted_at is NULL
-RETURNING id, name, type, credit_limit, cutoff_date, user_id, deleted_at
+RETURNING id, name, type, credit_limit, cutoff_date, account_id, user_id, deleted_at
 `
 
 type UpdateCardParams struct {
-	Name        string        `json:"name"`
-	Type        string        `json:"type"`
-	CreditLimit sql.NullInt64 `json:"credit_limit"`
-	CutoffDate  string        `json:"cutoff_date"`
-	ID          int64         `json:"id"`
-	UserID      sql.NullInt64 `json:"user_id"`
+	Name        string         `json:"name"`
+	Type        string         `json:"type"`
+	CreditLimit sql.NullInt64  `json:"credit_limit"`
+	CutoffDate  sql.NullString `json:"cutoff_date"`
+	ID          int64          `json:"id"`
+	UserID      sql.NullInt64  `json:"user_id"`
 }
 
 func (q *Queries) UpdateCard(ctx context.Context, arg UpdateCardParams) (Card, error) {
@@ -163,6 +169,7 @@ func (q *Queries) UpdateCard(ctx context.Context, arg UpdateCardParams) (Card, e
 		&i.Type,
 		&i.CreditLimit,
 		&i.CutoffDate,
+		&i.AccountID,
 		&i.UserID,
 		&i.DeletedAt,
 	)
