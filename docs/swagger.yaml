@@ -2,10 +2,12 @@ basePath: /
 definitions:
   api.CardResponse:
     properties:
+      account_id:
+        type: integer
       credit_limit:
         type: integer
       cutoff_date:
-        type: string
+        type: integer
       id:
         type: integer
       name:
@@ -15,10 +17,12 @@ definitions:
     type: object
   api.CreateCardRequest:
     properties:
+      account_id:
+        type: integer
       credit_limit:
         type: integer
       cutoff_date:
-        type: string
+        type: integer
       name:
         type: string
       type:

@@ -35,7 +35,7 @@ CREATE TABLE cards (
     name TEXT NOT NULL,
     type TEXT NOT NULL,
     credit_limit INTEGER,
-    cutoff_date TEXT,
+    cutoff_date INTEGER,
     account_id INTEGER REFERENCES accounts (id),
     user_id INTEGER REFERENCES users (id),
     deleted_at TEXT

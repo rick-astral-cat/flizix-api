@@ -23,12 +23,12 @@ RETURNING id, name, type, credit_limit, cutoff_date, account_id, user_id, delete
 `
 
 type CreateCardParams struct {
-	Name        string         `json:"name"`
-	Type        string         `json:"type"`
-	CreditLimit sql.NullInt64  `json:"credit_limit"`
-	CutoffDate  sql.NullString `json:"cutoff_date"`
-	AccountID   sql.NullInt64  `json:"account_id"`
-	UserID      sql.NullInt64  `json:"user_id"`
+	Name        string        `json:"name"`
+	Type        string        `json:"type"`
+	CreditLimit sql.NullInt64 `json:"credit_limit"`
+	CutoffDate  sql.NullInt64 `json:"cutoff_date"`
+	AccountID   sql.NullInt64 `json:"account_id"`
+	UserID      sql.NullInt64 `json:"user_id"`
 }
 
 func (q *Queries) CreateCard(ctx context.Context, arg CreateCardParams) (Card, error) {
@@ -145,12 +145,12 @@ RETURNING id, name, type, credit_limit, cutoff_date, account_id, user_id, delete
 `
 
 type UpdateCardParams struct {
-	Name        string         `json:"name"`
-	Type        string         `json:"type"`
-	CreditLimit sql.NullInt64  `json:"credit_limit"`
-	CutoffDate  sql.NullString `json:"cutoff_date"`
-	ID          int64          `json:"id"`
-	UserID      sql.NullInt64  `json:"user_id"`
+	Name        string        `json:"name"`
+	Type        string        `json:"type"`
+	CreditLimit sql.NullInt64 `json:"credit_limit"`
+	CutoffDate  sql.NullInt64 `json:"cutoff_date"`
+	ID          int64         `json:"id"`
+	UserID      sql.NullInt64 `json:"user_id"`
 }
 
 func (q *Queries) UpdateCard(ctx context.Context, arg UpdateCardParams) (Card, error) {

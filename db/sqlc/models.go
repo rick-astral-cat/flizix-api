@@ -38,7 +38,7 @@ type Card struct {
 	Name        string         `json:"name"`
 	Type        string         `json:"type"`
 	CreditLimit sql.NullInt64  `json:"credit_limit"`
-	CutoffDate  sql.NullString `json:"cutoff_date"`
+	CutoffDate  sql.NullInt64  `json:"cutoff_date"`
 	AccountID   sql.NullInt64  `json:"account_id"`
 	UserID      sql.NullInt64  `json:"user_id"`
 	DeletedAt   sql.NullString `json:"deleted_at"`
