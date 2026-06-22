@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
@@ -46,6 +47,12 @@ func main() {
 	defer dbConn.Close()
 	queries := db.New(dbConn)
 
+	//Seed default system data
+	ctx := context.Background()
+	if err = api.SeedDefaultAccountTypes(ctx, queries); err != nil {
+		log.Fatalf("Error seeding default account types: %v", err)
+	}
+	
 	userH := api.NewUserHandler(queries)
 	authH := api.NewAuthHandler(queries, cfg.JWTSecret, cfg.TelegramBotToken, cfg.AppTLS)
 	midH := api.NewMiddlewareHandler(authH, cfg.EnableCORS, cfg.AllowedOrigins)
