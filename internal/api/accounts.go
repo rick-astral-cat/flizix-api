@@ -21,20 +21,20 @@ func NewAccountHandler(queries *db.Queries) *AccountHandler {
 
 type CreateAccountRequest struct {
 	Name string `json:"name"`
-	Type string `json:"type"`
+	Type int64  `json:"type"`
 }
 
 type AccountResponse struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
-	Type string `json:"type"`
+	Type int64  `json:"type"`
 }
 
 func mapAccountToResponse(acc db.Account) AccountResponse {
 	return AccountResponse{
 		ID:   acc.ID,
 		Name: acc.Name,
-		Type: acc.Type,
+		Type: acc.Type.Int64,
 	}
 }
 
@@ -69,7 +69,7 @@ func (h AccountHandler) HandleCreateAccount(w http.ResponseWriter, r *http.Reque
 
 	acc, err := h.Queries.CreateAccount(r.Context(), db.CreateAccountParams{
 		Name:   req.Name,
-		Type:   req.Type,
+		Type:   sql.NullInt64{Int64: req.Type, Valid: true},
 		UserID: sql.NullInt64{Int64: userID, Valid: true},
 	})
 	if err != nil {

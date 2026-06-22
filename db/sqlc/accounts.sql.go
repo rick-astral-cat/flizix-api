@@ -20,7 +20,7 @@ INSERT INTO accounts (
 
 type CreateAccountParams struct {
 	Name   string        `json:"name"`
-	Type   string        `json:"type"`
+	Type   sql.NullInt64 `json:"type"`
 	UserID sql.NullInt64 `json:"user_id"`
 }
 

@@ -11,8 +11,16 @@ import (
 type Account struct {
 	ID        int64          `json:"id"`
 	Name      string         `json:"name"`
-	Type      string         `json:"type"`
+	Type      sql.NullInt64  `json:"type"`
 	UserID    sql.NullInt64  `json:"user_id"`
+	DeletedAt sql.NullString `json:"deleted_at"`
+}
+
+type AccountType struct {
+	ID        int64          `json:"id"`
+	Name      string         `json:"name"`
+	UserID    sql.NullInt64  `json:"user_id"`
+	IsSystem  int64          `json:"is_system"`
 	DeletedAt sql.NullString `json:"deleted_at"`
 }
 
