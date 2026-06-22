@@ -24,6 +24,7 @@ type Querier interface {
 	GetUserByTelegramId(ctx context.Context, telegramID sql.NullString) (User, error)
 	ListAccountsByUser(ctx context.Context, userID sql.NullInt64) ([]Account, error)
 	ListCardsByUser(ctx context.Context, userID sql.NullInt64) ([]Card, error)
+	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) error
 	SoftDeleteCard(ctx context.Context, arg SoftDeleteCardParams) error
 	SoftDeleteUser(ctx context.Context, id int64) error
 	UpdateCard(ctx context.Context, arg UpdateCardParams) (Card, error)

@@ -95,3 +95,18 @@ func (q *Queries) ListAccountsByUser(ctx context.Context, userID sql.NullInt64) 
 	}
 	return items, nil
 }
+
+const softDeleteAccount = `-- name: SoftDeleteAccount :exec
+UPDATE accounts SET deleted_at = CURRENT_TIMESTAMP
+WHERE id = ? AND user_id = ?
+`
+
+type SoftDeleteAccountParams struct {
+	ID     int64         `json:"id"`
+	UserID sql.NullInt64 `json:"user_id"`
+}
+
+func (q *Queries) SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) error {
+	_, err := q.db.ExecContext(ctx, softDeleteAccount, arg.ID, arg.UserID)
+	return err
+}
