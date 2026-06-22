@@ -275,11 +275,14 @@ const docTemplate = `{
         "api.CardResponse": {
             "type": "object",
             "properties": {
+                "account_id": {
+                    "type": "integer"
+                },
                 "credit_limit": {
                     "type": "integer"
                 },
                 "cutoff_date": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -295,11 +298,14 @@ const docTemplate = `{
         "api.CreateCardRequest": {
             "type": "object",
             "properties": {
+                "account_id": {
+                    "type": "integer"
+                },
                 "credit_limit": {
                     "type": "integer"
                 },
                 "cutoff_date": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"

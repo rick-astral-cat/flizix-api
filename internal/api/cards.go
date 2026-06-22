@@ -22,17 +22,17 @@ type CreateCardRequest struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
 	CreditLimit *int64 `json:"credit_limit"`
-	CutoffDate  string `json:"cutoff_date"`
+	CutoffDate  *int64 `json:"cutoff_date"`
 	AccountID   *int64 `json:"account_id"`
 }
 
 type CardResponse struct {
-	ID          int64   `json:"id"`
-	Name        string  `json:"name"`
-	Type        string  `json:"type"`
-	CreditLimit *int64  `json:"credit_limit,omitempty"`
-	CutoffDate  *string `json:"cutoff_date,omitempty"`
-	AccountID   *int64  `json:"account_id"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	CreditLimit *int64 `json:"credit_limit,omitempty"`
+	CutoffDate  *int64 `json:"cutoff_date,omitempty"`
+	AccountID   *int64 `json:"account_id"`
 }
 
 func mapCardToResponse(card db.Card) CardResponse {
@@ -48,9 +48,9 @@ func mapCardToResponse(card db.Card) CardResponse {
 		accountID = &val
 	}
 
-	var cutoffDate *string
+	var cutoffDate *int64
 	if card.CutoffDate.Valid {
-		val := card.CutoffDate.String
+		val := card.CutoffDate.Int64
 		cutoffDate = &val
 	}
 
@@ -85,6 +85,7 @@ func (h *CardHandler) HandleCreateCard(w http.ResponseWriter, r *http.Request) {
 	var req CreateCardRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
 	}
 
 	if req.Name == "" {
@@ -98,21 +99,26 @@ func (h *CardHandler) HandleCreateCard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var creditLimit sql.NullInt64
-	var cutoffDate sql.NullString
+	var cutoffDate sql.NullInt64
 	var accountID sql.NullInt64
 
 	if req.Type == "credit" {
-		if req.CreditLimit != nil || *req.CreditLimit <= 0 {
+		if req.CreditLimit == nil || *req.CreditLimit <= 0 {
 			respondWithError(w, http.StatusBadRequest, "Credit limit must be a positive number for credit cards")
 			return
 		}
-		if req.CutoffDate == "" {
+		if req.CutoffDate == nil {
 			respondWithError(w, http.StatusBadRequest, "Cutoff date is required for credit cards")
+			return
+		}
+		if *req.CutoffDate < 1 || *req.CutoffDate > 31 {
+			respondWithError(w, http.StatusBadRequest, "Cutoff date must be a day of the month between 1 and 31")
+			return
 		}
 
 		creditLimit = sql.NullInt64{Valid: true, Int64: *req.CreditLimit}
-		cutoffDate = sql.NullString{Valid: true, String: req.CutoffDate}
-		accountID = sql.NullInt64{Valid: true}
+		cutoffDate = sql.NullInt64{Valid: true, Int64: *req.CutoffDate}
+		accountID = sql.NullInt64{Valid: false}
 	} else if req.Type == "debit" {
 		if req.AccountID == nil {
 			respondWithError(w, http.StatusBadRequest, "Debit account ID is required")
@@ -132,8 +138,8 @@ func (h *CardHandler) HandleCreateCard(w http.ResponseWriter, r *http.Request) {
 		}
 
 		accountID = sql.NullInt64{Valid: true, Int64: acc.ID}
-		cutoffDate = sql.NullString{Valid: true}
-		creditLimit = sql.NullInt64{Valid: true}
+		cutoffDate = sql.NullInt64{Valid: false}
+		creditLimit = sql.NullInt64{Valid: false}
 	}
 
 	card, err := h.Queries.CreateCard(r.Context(), db.CreateCardParams{
