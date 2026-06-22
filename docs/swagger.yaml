@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  api.AccountResponse:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      type:
+        type: string
+    type: object
   api.CardResponse:
     properties:
       account_id:
@@ -10,6 +19,13 @@ definitions:
         type: integer
       id:
         type: integer
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  api.CreateAccountRequest:
+    properties:
       name:
         type: string
       type:
@@ -77,6 +93,87 @@ info:
   title: Flizix API
   version: "1.0"
 paths:
+  /accounts:
+    get:
+      description: Get all bank and cash accounts for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.AccountResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List all bank accounts
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Create a bank or cash account for the authenticated user
+      parameters:
+      - description: Account data
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.AccountResponse'
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new bank account
+      tags:
+      - accounts
+  /accounts/{id}:
+    delete:
+      description: Soft delete a specific bank account for the authenticated user
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete a bank account
+      tags:
+      - accounts
   /auth/dev-login:
     post:
       description: Omits Telegram validation and generate a JWT token for a testing
