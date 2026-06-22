@@ -14,3 +14,7 @@ LIMIT 1;
 SELECT * FROM accounts
 WHERE user_id = ? AND deleted_at IS NULL
 ORDER BY name ASC;
+
+-- name: SoftDeleteAccount :exec
+UPDATE accounts SET deleted_at = CURRENT_TIMESTAMP
+WHERE id = ? AND user_id = ?;
