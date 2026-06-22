@@ -91,11 +91,11 @@ func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 // @Failure      401  {string}  string "Not authorized"
 // @Router       /me [get]
 func (h *UserHandler) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(UserIDKey).(int64)
+	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
-		respondWithError(w, http.StatusInternalServerError, "No user ID found in context")
 		return
 	}
+
 	user, err := h.Queries.GetUserById(r.Context(), userID)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "Error at getting user, not found : "+err.Error())
