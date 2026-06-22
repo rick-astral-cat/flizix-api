@@ -22,10 +22,18 @@ CREATE TABLE projects (
     deleted_at TEXT
 );
 
+CREATE TABLE account_types (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    user_id INTEGER REFERENCES users (id),
+    is_system INTEGER NOT NULL DEFAULT 0,
+    deleted_at TEXT
+);
+
 CREATE TABLE accounts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    type TEXT NOT NULL,
+    type INTEGER REFERENCES account_types (id),
     user_id INTEGER REFERENCES users (id),
     deleted_at TEXT
 );
