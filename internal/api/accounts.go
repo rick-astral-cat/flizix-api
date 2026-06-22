@@ -51,9 +51,8 @@ func mapAccountToResponse(acc db.Account) AccountResponse {
 // @Security     BearerAuth
 // @Router       /accounts [post]
 func (h AccountHandler) HandleCreateAccount(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(UserIDKey).(int64)
+	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
-		respondWithError(w, http.StatusUnauthorized, "No UserID in request context")
 		return
 	}
 
@@ -91,9 +90,8 @@ func (h AccountHandler) HandleCreateAccount(w http.ResponseWriter, r *http.Reque
 // @Security     BearerAuth
 // @Router       /accounts [get]
 func (h AccountHandler) HandleListAccounts(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(UserIDKey).(int64)
+	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
-		respondWithError(w, http.StatusUnauthorized, "No UserID in request context")
 		return
 	}
 
@@ -122,9 +120,8 @@ func (h AccountHandler) HandleListAccounts(w http.ResponseWriter, r *http.Reques
 // @Security     BearerAuth
 // @Router       /accounts/{id} [delete]
 func (h AccountHandler) HandleDeleteAccount(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(UserIDKey).(int64)
+	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
-		respondWithError(w, http.StatusUnauthorized, "No UserID in request context")
 		return
 	}
 

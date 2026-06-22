@@ -76,9 +76,8 @@ func mapCardToResponse(card db.Card) CardResponse {
 // @Security     BearerAuth
 // @Router       /cards [post]
 func (h *CardHandler) HandleCreateCard(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(UserIDKey).(int64)
+	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
-		respondWithError(w, http.StatusUnauthorized, "no UserID in request context")
 		return
 	}
 
@@ -169,9 +168,8 @@ func (h *CardHandler) HandleCreateCard(w http.ResponseWriter, r *http.Request) {
 // @Security     BearerAuth
 // @Router       /cards [get]
 func (h *CardHandler) HandleListCards(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(UserIDKey).(int64)
+	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
-		respondWithError(w, http.StatusUnauthorized, "No UserID in request context")
 		return
 	}
 
