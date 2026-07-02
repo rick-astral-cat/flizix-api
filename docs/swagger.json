@@ -405,7 +405,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -439,7 +439,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },

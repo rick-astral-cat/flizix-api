@@ -7,7 +7,7 @@ definitions:
       name:
         type: string
       type:
-        type: string
+        type: integer
     type: object
   api.CardResponse:
     properties:
@@ -29,7 +29,7 @@ definitions:
       name:
         type: string
       type:
-        type: string
+        type: integer
     type: object
   api.CreateCardRequest:
     properties:

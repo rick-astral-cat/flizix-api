@@ -411,7 +411,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -445,7 +445,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
