@@ -22,7 +22,7 @@ func RegisterRoutes(
 	mux.HandleFunc("POST /auth/logout", authH.HandleLogout)
 
 	if env == "development" {
-		mux.Handle("GET /swagger/", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
+		mux.Handle("GET /swagger/", httpSwagger.Handler(httpSwagger.URL("/api/swagger/doc.json")))
 		mux.HandleFunc("POST /auth/dev-login", authH.HandleDevLogin)
 	}
 

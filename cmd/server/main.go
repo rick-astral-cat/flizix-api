@@ -29,7 +29,7 @@ import (
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host      localhost:8080
-// @BasePath  /
+// @BasePath  /api
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
@@ -52,7 +52,7 @@ func main() {
 	if err = api.SeedDefaultAccountTypes(ctx, queries); err != nil {
 		log.Fatalf("Error seeding default account types: %v", err)
 	}
-	
+
 	userH := api.NewUserHandler(queries)
 	authH := api.NewAuthHandler(queries, cfg.JWTSecret, cfg.TelegramBotToken, cfg.AppTLS)
 	midH := api.NewMiddlewareHandler(authH, cfg.EnableCORS, cfg.AllowedOrigins)
@@ -61,9 +61,13 @@ func main() {
 
 	log.Println("### FLIZIX STARTING ON", cfg.AppEnv, " ###")
 	log.Println("Database URL:", cfg.DbUrl)
+
 	mux := http.NewServeMux()
 	api.RegisterRoutes(mux, cfg.AppEnv, userH, authH, midH, cardH, accH)
-	handleWithCORS := midH.CORSMiddleware(mux)
+	mainMux := http.NewServeMux()
+	mainMux.Handle("/api/", http.StripPrefix("/api", mux))
+	handleWithCORS := midH.CORSMiddleware(mainMux)
+	
 	srv := &http.Server{
 		Addr:         ":" + cfg.AppPort,
 		Handler:      handleWithCORS,

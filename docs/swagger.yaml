@@ -1,4 +1,4 @@
-basePath: /
+basePath: /api
 definitions:
   api.AccountResponse:
     properties:

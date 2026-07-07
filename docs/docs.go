@@ -537,7 +537,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/",
+	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Flizix API",
 	Description:      "Backend for personal finances",
