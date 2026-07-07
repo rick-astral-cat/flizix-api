@@ -1,0 +1,41 @@
+name: Deploy Flizix Backend (Go)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+          cache: true
+
+      # Opcional: Si usas swaggo para generar documentación de Swagger en caliente
+      - name: Install Swag and Generate Docs
+        run: |
+          go install github.com/swaggo/swag/cmd/swag@latest
+          swag init -g cmd/server/main.go
+
+      - name: Build Binary for Linux
+        run: |
+          env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o flizix ./cmd/server
+
+      - name: Deploy Binary to Droplet
+        uses: easingthemes/ssh-deploy@v5.1.0
+        with:
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SOURCE: "flizix"
+          TARGET: "/var/www/flizix/api"
+          SCRIPT_AFTER: |
+            sudo systemctl restart flizix-backend.service || true
