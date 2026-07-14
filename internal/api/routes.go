@@ -15,6 +15,7 @@ func RegisterRoutes(
 	midH *MiddlewareHandler,
 	cardH *CardHandler,
 	accH *AccountHandler,
+	accTpH *AccountTypeHandler,
 ) {
 	mux.HandleFunc("POST /users", userH.HandleCreateUser)
 	mux.HandleFunc("GET /health", HandleHealth)
@@ -38,4 +39,9 @@ func RegisterRoutes(
 	mux.Handle("GET /accounts", midH.JWTMiddleware(http.HandlerFunc(accH.HandleListAccounts)))
 	mux.Handle("PUT /accounts/{id}", midH.JWTMiddleware(http.HandlerFunc(accH.HandleUpdateAccount)))
 	mux.Handle("DELETE /accounts/{id}", midH.JWTMiddleware(http.HandlerFunc(accH.HandleDeleteAccount)))
+
+	//Account Types
+	mux.Handle("GET /account-types", midH.JWTMiddleware(http.HandlerFunc(accTpH.HandleListAccountTypesByUser)))
+	mux.Handle("POST /account-types", midH.JWTMiddleware(http.HandlerFunc(accTpH.HandleCreateAccountType)))
+	mux.Handle("DELETE /account-types/{id}", midH.JWTMiddleware(http.HandlerFunc(accTpH.HandleSoftDeleteAccountType)))
 }

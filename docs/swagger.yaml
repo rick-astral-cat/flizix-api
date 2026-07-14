@@ -9,6 +9,15 @@ definitions:
       type:
         type: integer
     type: object
+  api.AccountTypeResponse:
+    properties:
+      id:
+        type: integer
+      is_system:
+        type: boolean
+      name:
+        type: string
+    type: object
   api.CardResponse:
     properties:
       account_id:
@@ -30,6 +39,11 @@ definitions:
         type: string
       type:
         type: integer
+    type: object
+  api.CreateAccountTypeRequest:
+    properties:
+      name:
+        type: string
     type: object
   api.CreateCardRequest:
     properties:
@@ -93,6 +107,93 @@ info:
   title: Flizix API
   version: "1.0"
 paths:
+  /account-types:
+    get:
+      description: Get all system default account types and custom ones for the authenticated
+        user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.AccountTypeResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List account types
+      tags:
+      - account-types
+    post:
+      consumes:
+      - application/json
+      description: Create a new personalized account type for the authenticated user
+      parameters:
+      - description: Account type data
+        in: body
+        name: account_type
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateAccountTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.AccountTypeResponse'
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a custom account type
+      tags:
+      - account-types
+  /account-types/{id}:
+    delete:
+      description: Soft delete a user's custom account type by its ID (System types
+        cannot be deleted)
+      parameters:
+      - description: Account Type ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Account type deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete a custom account type
+      tags:
+      - account-types
   /accounts:
     get:
       description: Get all bank and cash accounts for the authenticated user
