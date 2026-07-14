@@ -27,12 +27,13 @@ func RegisterRoutes(
 	}
 
 	// Private Routes
-	profileHandler := http.HandlerFunc(userH.HandleGetProfile)
-	cardsHandler := http.HandlerFunc(cardH.HandleCreateCard)
+	mux.Handle("GET /me", midH.JWTMiddleware(http.HandlerFunc(userH.HandleGetProfile)))
 
-	mux.Handle("GET /me", midH.JWTMiddleware(profileHandler))
-	mux.Handle("POST /cards", midH.JWTMiddleware(cardsHandler))
+	//Cards
+	mux.Handle("POST /cards", midH.JWTMiddleware(http.HandlerFunc(cardH.HandleCreateCard)))
 	mux.Handle("GET /cards", midH.JWTMiddleware(http.HandlerFunc(cardH.HandleListCards)))
+
+	//Accounts
 	mux.Handle("POST /accounts", midH.JWTMiddleware(http.HandlerFunc(accH.HandleCreateAccount)))
 	mux.Handle("GET /accounts", midH.JWTMiddleware(http.HandlerFunc(accH.HandleListAccounts)))
 	mux.Handle("PUT /accounts/{id}", midH.JWTMiddleware(http.HandlerFunc(accH.HandleUpdateAccount)))
