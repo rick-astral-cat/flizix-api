@@ -35,5 +35,6 @@ func RegisterRoutes(
 	mux.Handle("GET /cards", midH.JWTMiddleware(http.HandlerFunc(cardH.HandleListCards)))
 	mux.Handle("POST /accounts", midH.JWTMiddleware(http.HandlerFunc(accH.HandleCreateAccount)))
 	mux.Handle("GET /accounts", midH.JWTMiddleware(http.HandlerFunc(accH.HandleListAccounts)))
+	mux.Handle("PUT /accounts/{id}", midH.JWTMiddleware(http.HandlerFunc(accH.HandleUpdateAccount)))
 	mux.Handle("DELETE /accounts/{id}", midH.JWTMiddleware(http.HandlerFunc(accH.HandleDeleteAccount)))
 }
