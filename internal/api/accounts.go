@@ -143,3 +143,50 @@ func (h AccountHandler) HandleDeleteAccount(w http.ResponseWriter, r *http.Reque
 
 	respondWithJSON(w, http.StatusNoContent, map[string]string{"message": "account deleted"})
 }
+
+// HandleUpdateAccount godoc
+// @Summary      Update an account
+// @Description  Update the name and type of an account by its ID
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Param        id       path      int                   true  "Account ID"
+// @Param        account  body      CreateAccountRequest  true  "Account update payload"
+// @Success      200      {object}  AccountResponse       "Account updated successfully"
+// @Failure      400      {string}  string                "Invalid account ID or payload"
+// @Failure      401      {string}  string                "Unauthorized"
+// @Failure      500      {string}  string                "Internal server error"
+// @Security     BearerAuth
+// @Router       /accounts/{id} [put]
+func (h AccountHandler) HandleUpdateAccount(w http.ResponseWriter, r *http.Request) {
+	userID, ok := GetUserIdFromContext(w, r)
+	if !ok {
+		return
+	}
+
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid Account ID")
+		return
+	}
+
+	var req CreateAccountRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	acc, err := h.Queries.UpdateAccount(r.Context(), db.UpdateAccountParams{
+		ID:     id,
+		Name:   req.Name,
+		Type:   sql.NullInt64{Int64: req.Type, Valid: true},
+		UserID: sql.NullInt64{Int64: userID, Valid: true},
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not update account: "+err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, mapAccountToResponse(acc))
+}
