@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+
+echo "=========================================================="
+echo "🚀 Executing automatic validations in local GO project"
+echo "=========================================================="
+
+# Just .go files staged for commit
+STAGED_GO_FILES=$(git diff --name-only --cached --diff-filter=d | grep '\.go$' || true)
+
+if [ -z "$STAGED_GO_FILES" ]; then
+    echo "⚡ No modified detected files, omitting linter"
+    exit 0
+fi
+
+# Format code before commit
+echo "🧹 Formatting staged files (go fmt) ..."
+for file in $STAGED_GO_FILES; do
+    go fmt "$file"
+    git add "$file" # In case format change file it is added
+done
+
+echo "🔍 Executing golangci-lint upon modified files..."
+golangci-lint run $STAGED_GO_FILES
+LINTER_STATUS=$?
+
+if [ $LINTER_STATUS -ne 0 ]; then
+    echo "❌ Error: Some problems were found. Cancelled Commit."
+    exit 1
+fi
+
+echo "✅ ¡Everything its okay, commiting..."
+exit 0
