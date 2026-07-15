@@ -44,7 +44,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Can´t connect to flizix database: %v", err)
 	}
-	defer dbConn.Close()
+	defer func() {
+		if err := dbConn.Close(); err != nil {
+			log.Printf("error closing database connection: %v", err)
+		}
+	}()
 	queries := db.New(dbConn)
 
 	//Seed default system data
