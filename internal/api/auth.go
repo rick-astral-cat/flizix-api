@@ -134,7 +134,7 @@ func (h *AuthHandler) HandleTelegramLogin(w http.ResponseWriter, r *http.Request
 	}
 
 	tgID := strconv.FormatInt(req.ID, 10)
-	user, err := h.Queries.GetUserByTelegramId(r.Context(), sql.NullString{string(tgID), true})
+	user, err := h.Queries.GetUserByTelegramId(r.Context(), sql.NullString{String: string(tgID), Valid: true})
 	//Create user if not exists
 	if err == sql.ErrNoRows {
 		user, err = h.Queries.CreateUserWithTelegram(r.Context(), db.CreateUserWithTelegramParams{
@@ -178,7 +178,7 @@ func (h *AuthHandler) HandleTelegramLogin(w http.ResponseWriter, r *http.Request
 // @Router       /auth/dev-login [post]
 func (h *AuthHandler) HandleDevLogin(w http.ResponseWriter, r *http.Request) {
 	tgID := "dev_test_user"
-	user, err := h.Queries.GetUserByTelegramId(r.Context(), sql.NullString{string(tgID), true})
+	user, err := h.Queries.GetUserByTelegramId(r.Context(), sql.NullString{String: string(tgID), Valid: true})
 	if errors.Is(err, sql.ErrNoRows) {
 		user, err = h.Queries.CreateUserWithTelegram(r.Context(), db.CreateUserWithTelegramParams{
 			Name:       "Test User",

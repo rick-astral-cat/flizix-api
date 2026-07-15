@@ -101,7 +101,8 @@ func (h *CardHandler) HandleCreateCard(w http.ResponseWriter, r *http.Request) {
 	var cutoffDate sql.NullInt64
 	var accountID sql.NullInt64
 
-	if req.Type == "credit" {
+	switch req.Type {
+	case "credit":
 		if req.CreditLimit == nil || *req.CreditLimit <= 0 {
 			respondWithError(w, http.StatusBadRequest, "Credit limit must be a positive number for credit cards")
 			return
@@ -118,7 +119,7 @@ func (h *CardHandler) HandleCreateCard(w http.ResponseWriter, r *http.Request) {
 		creditLimit = sql.NullInt64{Valid: true, Int64: *req.CreditLimit}
 		cutoffDate = sql.NullInt64{Valid: true, Int64: *req.CutoffDate}
 		accountID = sql.NullInt64{Valid: false}
-	} else if req.Type == "debit" {
+	case "debit":
 		if req.AccountID == nil {
 			respondWithError(w, http.StatusBadRequest, "Debit account ID is required")
 			return

@@ -21,7 +21,9 @@ for file in $STAGED_GO_FILES; do
 done
 
 echo "🔍 Executing golangci-lint upon modified files..."
-golangci-lint run $STAGED_GO_FILES
+
+STAGED_DIRS=$(echo "$STAGED_GO_FILES" | xargs -I {} dirname {} | sort -u)
+golangci-lint run $STAGED_DIRS
 LINTER_STATUS=$?
 
 if [ $LINTER_STATUS -ne 0 ]; then
