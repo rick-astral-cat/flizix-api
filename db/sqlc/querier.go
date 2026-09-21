@@ -13,12 +13,14 @@ type Querier interface {
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateAccountType(ctx context.Context, arg CreateAccountTypeParams) (AccountType, error)
 	CreateCard(ctx context.Context, arg CreateCardParams) (Card, error)
+	CreatePurchase(ctx context.Context, arg CreatePurchaseParams) (Purchase, error)
 	CreateUserWithPasskey(ctx context.Context, arg CreateUserWithPasskeyParams) (User, error)
 	// Initial user registration
 	CreateUserWithTelegram(ctx context.Context, arg CreateUserWithTelegramParams) (User, error)
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetAccountTypeByUser(ctx context.Context, arg GetAccountTypeByUserParams) (AccountType, error)
 	GetCardByID(ctx context.Context, arg GetCardByIDParams) (Card, error)
+	GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams) (Purchase, error)
 	GetUserByEmail(ctx context.Context, email sql.NullString) (User, error)
 	// Used to get user profile once registered
 	GetUserById(ctx context.Context, id int64) (User, error)
@@ -27,13 +29,16 @@ type Querier interface {
 	ListAccountTypesByUser(ctx context.Context, userID sql.NullInt64) ([]AccountType, error)
 	ListAccountsByUser(ctx context.Context, userID sql.NullInt64) ([]Account, error)
 	ListCardsByUser(ctx context.Context, userID sql.NullInt64) ([]Card, error)
+	ListPurchasesByUserId(ctx context.Context, userID sql.NullInt64) ([]Purchase, error)
 	ListSystemAccountTypes(ctx context.Context) ([]AccountType, error)
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) error
 	SoftDeleteAccountTypeByUser(ctx context.Context, arg SoftDeleteAccountTypeByUserParams) error
 	SoftDeleteCard(ctx context.Context, arg SoftDeleteCardParams) error
+	SoftDeletePurchase(ctx context.Context, arg SoftDeletePurchaseParams) error
 	SoftDeleteUser(ctx context.Context, id int64) error
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
 	UpdateCard(ctx context.Context, arg UpdateCardParams) (Card, error)
+	UpdatePurchase(ctx context.Context, arg UpdatePurchaseParams) (Purchase, error)
 	UpdateUserPasskey(ctx context.Context, arg UpdateUserPasskeyParams) error
 }
 

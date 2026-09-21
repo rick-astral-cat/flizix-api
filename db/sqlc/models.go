@@ -112,7 +112,6 @@ type Purchase struct {
 	ID                 int64          `json:"id"`
 	Purchase           string         `json:"purchase"`
 	Date               string         `json:"date"`
-	PaymentMethod      string         `json:"payment_method"`
 	Amount             int64          `json:"amount"`
 	AmountPaid         int64          `json:"amount_paid"`
 	Remaining          sql.NullInt64  `json:"remaining"`
