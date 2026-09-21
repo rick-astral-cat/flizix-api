@@ -77,7 +77,6 @@ CREATE TABLE purchases (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     purchase TEXT NOT NULL,
     date TEXT NOT NULL,
-    payment_method TEXT NOT NULL,
     amount INTEGER NOT NULL,
     amount_paid INTEGER NOT NULL DEFAULT 0,
     remaining INTEGER GENERATED ALWAYS AS (amount - amount_paid) VIRTUAL,
@@ -88,7 +87,11 @@ CREATE TABLE purchases (
     account_id INTEGER REFERENCES accounts (id),
     project_id INTEGER REFERENCES projects (id),
     user_id INTEGER REFERENCES users (id),
-    deleted_at TEXT
+    deleted_at TEXT,
+    CONSTRAINT check_payment_src CHECK (
+        (card_id IS NOT NULL AND account_id IS NULL) OR
+        (card_id IS NULL AND account_id IS NOT NULL)
+    )
 );
 
 CREATE TABLE monthly_payments (
