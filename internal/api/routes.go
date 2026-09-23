@@ -16,6 +16,7 @@ func RegisterRoutes(
 	cardH *CardHandler,
 	accH *AccountHandler,
 	accTpH *AccountTypeHandler,
+	purchaseH *PurchaseHandler,
 ) {
 	mux.HandleFunc("POST /users", userH.HandleCreateUser)
 	mux.HandleFunc("GET /health", HandleHealth)
@@ -44,4 +45,11 @@ func RegisterRoutes(
 	mux.Handle("GET /account-types", midH.JWTMiddleware(http.HandlerFunc(accTpH.HandleListAccountTypesByUser)))
 	mux.Handle("POST /account-types", midH.JWTMiddleware(http.HandlerFunc(accTpH.HandleCreateAccountType)))
 	mux.Handle("DELETE /account-types/{id}", midH.JWTMiddleware(http.HandlerFunc(accTpH.HandleSoftDeleteAccountType)))
+
+	//Purchases
+	mux.Handle("POST /purchases", midH.JWTMiddleware(http.HandlerFunc(purchaseH.HandleCreatePurchase)))
+	mux.Handle("GET /purchases", midH.JWTMiddleware(http.HandlerFunc(purchaseH.HandleListPurchases)))
+	mux.Handle("GET /purchases/{id}", midH.JWTMiddleware(http.HandlerFunc(purchaseH.HandleGetPurchase)))
+	mux.Handle("PUT /purchases/{id}", midH.JWTMiddleware(http.HandlerFunc(purchaseH.HandleUpdatePurchase)))
+	mux.Handle("DELETE /purchases/{id}", midH.JWTMiddleware(http.HandlerFunc(purchaseH.HandleDeletePurchase)))
 }

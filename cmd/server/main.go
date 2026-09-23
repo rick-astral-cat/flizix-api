@@ -63,12 +63,13 @@ func main() {
 	cardH := api.NewCardHandler(queries)
 	accH := api.NewAccountHandler(queries)
 	accTpH := api.NewAccountTypeHandler(queries)
+	purchaseH := api.NewPurchaseHandler(queries)
 
 	log.Println("### FLIZIX STARTING ON", cfg.AppEnv, " ###")
 	log.Println("Database URL:", cfg.DbUrl)
 
 	mux := http.NewServeMux()
-	api.RegisterRoutes(mux, cfg.AppEnv, userH, authH, midH, cardH, accH, accTpH)
+	api.RegisterRoutes(mux, cfg.AppEnv, userH, authH, midH, cardH, accH, accTpH, purchaseH)
 	mainMux := http.NewServeMux()
 	mainMux.Handle("/api/", http.StripPrefix("/api", mux))
 	handleWithCORS := midH.CORSMiddleware(mainMux)
