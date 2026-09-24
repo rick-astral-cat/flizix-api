@@ -9,7 +9,7 @@ import (
 )
 
 type UserHandler struct {
-	Queries *db.Queries
+	Queries db.Querier
 }
 
 type CreateUserRequest struct {
@@ -24,7 +24,7 @@ type UserResponse struct {
 	Email string `json:"email,omitempty"`
 }
 
-func NewUserHandler(queries *db.Queries) *UserHandler {
+func NewUserHandler(queries db.Querier) *UserHandler {
 	return &UserHandler{
 		Queries: queries,
 	}

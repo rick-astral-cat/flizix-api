@@ -34,13 +34,13 @@ type TelegramAuthRequest struct {
 }
 
 type AuthHandler struct {
-	Queries          *db.Queries
+	Queries          db.Querier
 	JWTSecret        string
 	TelegramBotToken string
 	AppTLS           bool
 }
 
-func NewAuthHandler(Queries *db.Queries, JWTSecret string, TelegramBotToken string, AppTLS bool) *AuthHandler {
+func NewAuthHandler(Queries db.Querier, JWTSecret string, TelegramBotToken string, AppTLS bool) *AuthHandler {
 	return &AuthHandler{
 		Queries:          Queries,
 		JWTSecret:        JWTSecret,
