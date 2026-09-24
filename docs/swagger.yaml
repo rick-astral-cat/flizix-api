@@ -58,6 +58,25 @@ definitions:
       type:
         type: string
     type: object
+  api.CreatePurchaseRequest:
+    properties:
+      account_id:
+        type: integer
+      amount:
+        type: integer
+      card_id:
+        type: integer
+      carry_over_next_month:
+        type: integer
+      comment:
+        type: string
+      date:
+        type: string
+      project_id:
+        type: integer
+      purchase:
+        type: string
+    type: object
   api.CreateUserRequest:
     properties:
       email:
@@ -66,6 +85,33 @@ definitions:
         type: string
       passkey_id:
         type: string
+    type: object
+  api.PurchaseResponse:
+    properties:
+      account_id:
+        type: integer
+      amount:
+        type: integer
+      amount_paid:
+        type: integer
+      card_id:
+        type: integer
+      carry_over_next_month:
+        type: boolean
+      comment:
+        type: string
+      date:
+        type: string
+      id:
+        type: integer
+      paid:
+        type: boolean
+      project_id:
+        type: integer
+      purchase:
+        type: string
+      remaining:
+        type: integer
     type: object
   api.TelegramAuthRequest:
     properties:
@@ -82,6 +128,27 @@ definitions:
       photo_url:
         type: string
       username:
+        type: string
+    type: object
+  api.UpdatePurchaseRequest:
+    properties:
+      account_id:
+        type: integer
+      amount:
+        type: integer
+      amount_paid:
+        type: integer
+      card_id:
+        type: integer
+      carry_over_next_month:
+        type: integer
+      comment:
+        type: string
+      date:
+        type: string
+      project_id:
+        type: integer
+      purchase:
         type: string
     type: object
   api.UserResponse:
@@ -444,6 +511,169 @@ paths:
       summary: Get profile
       tags:
       - users
+  /purchases:
+    get:
+      description: Get all purchases for the authenticated user, ordered by date descending
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.PurchaseResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List all purchases
+      tags:
+      - purchases
+    post:
+      consumes:
+      - application/json
+      description: Register a purchase for the authenticated user. Exactly one of
+        card_id or account_id must be provided.
+      parameters:
+      - description: Purchase data
+        in: body
+        name: purchase
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreatePurchaseRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.PurchaseResponse'
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new purchase
+      tags:
+      - purchases
+  /purchases/{id}:
+    delete:
+      description: Soft delete a purchase by its ID for the authenticated user
+      parameters:
+      - description: Purchase ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete a purchase
+      tags:
+      - purchases
+    get:
+      description: Retrieve a single purchase by its ID for the authenticated user
+      parameters:
+      - description: Purchase ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.PurchaseResponse'
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Purchase not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get a purchase by ID
+      tags:
+      - purchases
+    put:
+      consumes:
+      - application/json
+      description: Update an existing purchase by its ID for the authenticated user.
+        Exactly one of card_id or account_id must be provided.
+      parameters:
+      - description: Purchase ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated purchase data
+        in: body
+        name: purchase
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdatePurchaseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.PurchaseResponse'
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update a purchase
+      tags:
+      - purchases
   /users:
     post:
       consumes:
