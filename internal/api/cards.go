@@ -3,16 +3,17 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	db "github.com/rick-astral-cat/flizix-api/db/sqlc"
 )
 
 type CardHandler struct {
-	Queries *db.Queries
+	Queries db.Querier
 }
 
-func NewCardHandler(queries *db.Queries) *CardHandler {
+func NewCardHandler(queries db.Querier) *CardHandler {
 	return &CardHandler{
 		Queries: queries,
 	}
@@ -129,7 +130,7 @@ func (h *CardHandler) HandleCreateCard(w http.ResponseWriter, r *http.Request) {
 			ID:     *req.AccountID,
 			UserID: sql.NullInt64{Valid: true, Int64: userID},
 		})
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			respondWithError(w, http.StatusBadRequest, "The associated account does not exist or does not belong to the user")
 			return
 		} else if err != nil {
@@ -180,7 +181,7 @@ func (h *CardHandler) HandleListCards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := make([]CardResponse, 0)
+	response := make([]CardResponse, 0, len(cards))
 	for _, card := range cards {
 		response = append(response, mapCardToResponse(card))
 	}

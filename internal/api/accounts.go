@@ -10,16 +10,21 @@ import (
 )
 
 type AccountHandler struct {
-	Queries *db.Queries
+	Queries db.Querier
 }
 
-func NewAccountHandler(queries *db.Queries) *AccountHandler {
+func NewAccountHandler(queries db.Querier) *AccountHandler {
 	return &AccountHandler{
 		Queries: queries,
 	}
 }
 
 type CreateAccountRequest struct {
+	Name string `json:"name"`
+	Type int64  `json:"type"`
+}
+
+type UpdateAccountRequest struct {
 	Name string `json:"name"`
 	Type int64  `json:"type"`
 }
@@ -50,7 +55,7 @@ func mapAccountToResponse(acc db.Account) AccountResponse {
 // @Failure      401  {string} string "Unauthorized"
 // @Security     BearerAuth
 // @Router       /accounts [post]
-func (h AccountHandler) HandleCreateAccount(w http.ResponseWriter, r *http.Request) {
+func (h *AccountHandler) HandleCreateAccount(w http.ResponseWriter, r *http.Request) {
 	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
 		return
@@ -89,7 +94,7 @@ func (h AccountHandler) HandleCreateAccount(w http.ResponseWriter, r *http.Reque
 // @Failure      401  {string}  string "Unauthorized"
 // @Security     BearerAuth
 // @Router       /accounts [get]
-func (h AccountHandler) HandleListAccounts(w http.ResponseWriter, r *http.Request) {
+func (h *AccountHandler) HandleListAccounts(w http.ResponseWriter, r *http.Request) {
 	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
 		return
@@ -101,7 +106,7 @@ func (h AccountHandler) HandleListAccounts(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	response := make([]AccountResponse, 0)
+	response := make([]AccountResponse, 0, len(accounts))
 	for _, acc := range accounts {
 		response = append(response, mapAccountToResponse(acc))
 	}
@@ -114,19 +119,18 @@ func (h AccountHandler) HandleListAccounts(w http.ResponseWriter, r *http.Reques
 // @Description  Soft delete a specific bank account for the authenticated user
 // @Tags         accounts
 // @Param        id   path      int  true  "Account ID"
-// @Success      200  {object}  map[string]string
+// @Success      204  "No Content"
 // @Failure      400  {string}  string "Invalid ID"
 // @Failure      401  {string}  string "Unauthorized"
 // @Security     BearerAuth
 // @Router       /accounts/{id} [delete]
-func (h AccountHandler) HandleDeleteAccount(w http.ResponseWriter, r *http.Request) {
+func (h *AccountHandler) HandleDeleteAccount(w http.ResponseWriter, r *http.Request) {
 	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
 		return
 	}
 
-	idStr := r.PathValue("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid Account ID")
 		return
@@ -141,7 +145,7 @@ func (h AccountHandler) HandleDeleteAccount(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	respondWithJSON(w, http.StatusNoContent, map[string]string{"message": "account deleted"})
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // HandleUpdateAccount godoc
@@ -151,27 +155,26 @@ func (h AccountHandler) HandleDeleteAccount(w http.ResponseWriter, r *http.Reque
 // @Accept       json
 // @Produce      json
 // @Param        id       path      int                   true  "Account ID"
-// @Param        account  body      CreateAccountRequest  true  "Account update payload"
+// @Param        account  body      UpdateAccountRequest  true  "Account update payload"
 // @Success      200      {object}  AccountResponse       "Account updated successfully"
 // @Failure      400      {string}  string                "Invalid account ID or payload"
 // @Failure      401      {string}  string                "Unauthorized"
 // @Failure      500      {string}  string                "Internal server error"
 // @Security     BearerAuth
 // @Router       /accounts/{id} [put]
-func (h AccountHandler) HandleUpdateAccount(w http.ResponseWriter, r *http.Request) {
+func (h *AccountHandler) HandleUpdateAccount(w http.ResponseWriter, r *http.Request) {
 	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
 		return
 	}
 
-	idStr := r.PathValue("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid Account ID")
 		return
 	}
 
-	var req CreateAccountRequest
+	var req UpdateAccountRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return

@@ -10,10 +10,10 @@ import (
 )
 
 type AccountTypeHandler struct {
-	Queries *db.Queries
+	Queries db.Querier
 }
 
-func NewAccountTypeHandler(queries *db.Queries) *AccountTypeHandler {
+func NewAccountTypeHandler(queries db.Querier) *AccountTypeHandler {
 	return &AccountTypeHandler{
 		Queries: queries,
 	}
@@ -48,7 +48,7 @@ func mapAccountTypeToResponse(accountType db.AccountType) AccountTypeResponse {
 // @Failure      401  {string}  string "Unauthorized"
 // @Security     BearerAuth
 // @Router       /account-types [get]
-func (h AccountTypeHandler) HandleListAccountTypesByUser(w http.ResponseWriter, r *http.Request) {
+func (h *AccountTypeHandler) HandleListAccountTypesByUser(w http.ResponseWriter, r *http.Request) {
 	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
 		return
@@ -80,7 +80,7 @@ func (h AccountTypeHandler) HandleListAccountTypesByUser(w http.ResponseWriter, 
 // @Failure      401   {string}  string "Unauthorized"
 // @Security     BearerAuth
 // @Router       /account-types [post]
-func (h AccountTypeHandler) HandleCreateAccountType(w http.ResponseWriter, r *http.Request) {
+func (h *AccountTypeHandler) HandleCreateAccountType(w http.ResponseWriter, r *http.Request) {
 	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
 		return
@@ -116,20 +116,19 @@ func (h AccountTypeHandler) HandleCreateAccountType(w http.ResponseWriter, r *ht
 // @Description  Soft delete a user's custom account type by its ID (System types cannot be deleted)
 // @Tags         account-types
 // @Param        id    path      int  true  "Account Type ID"
-// @Success      204   {object}  map[string]string "Account type deleted successfully"
+// @Success      204   "No Content"
 // @Failure      400   {string}  string "Invalid ID"
 // @Failure      401   {string}  string "Unauthorized"
 // @Failure      500   {string}  string "Internal server error"
 // @Security     BearerAuth
 // @Router       /account-types/{id} [delete]
-func (h AccountTypeHandler) HandleSoftDeleteAccountType(w http.ResponseWriter, r *http.Request) {
+func (h *AccountTypeHandler) HandleSoftDeleteAccountType(w http.ResponseWriter, r *http.Request) {
 	userID, ok := GetUserIdFromContext(w, r)
 	if !ok {
 		return
 	}
 
-	idStr := r.PathValue("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid Account Type ID")
 		return
@@ -139,11 +138,10 @@ func (h AccountTypeHandler) HandleSoftDeleteAccountType(w http.ResponseWriter, r
 		ID:     id,
 		UserID: sql.NullInt64{Int64: userID, Valid: true},
 	})
-
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not delete account type: "+err.Error())
 		return
 	}
 
-	respondWithJSON(w, http.StatusNoContent, map[string]string{"result": "Account type deleted successfully"})
+	w.WriteHeader(http.StatusNoContent)
 }
