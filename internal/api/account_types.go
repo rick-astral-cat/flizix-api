@@ -30,12 +30,10 @@ type AccountTypeResponse struct {
 }
 
 func mapAccountTypeToResponse(accountType db.AccountType) AccountTypeResponse {
-	IsSystem := false
-	IsSystem = accountType.IsSystem == 1
 	return AccountTypeResponse{
 		ID:       accountType.ID,
 		Name:     accountType.Name,
-		IsSystem: IsSystem,
+		IsSystem: accountType.IsSystem == 1,
 	}
 }
 
