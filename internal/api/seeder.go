@@ -8,7 +8,7 @@ import (
 	db "github.com/rick-astral-cat/flizix-api/db/sqlc"
 )
 
-func SeedDefaultAccountTypes(ctx context.Context, queries *db.Queries) error {
+func SeedDefaultAccountTypes(ctx context.Context, queries db.Querier) error {
 	defaults := []string{"account_type.checking", "account_type.cash"}
 
 	accTypes, err := queries.ListSystemAccountTypes(ctx)
