@@ -57,6 +57,12 @@ func main() {
 		log.Fatalf("Error seeding default account types: %v", err)
 	}
 
+	if cfg.AppEnv == config.EnvDevelopment {
+		if err = api.SeedDevData(ctx, queries); err != nil {
+			log.Fatalf("Error seeding development data: %v", err)
+		}
+	}
+
 	userH := api.NewUserHandler(queries)
 	authH := api.NewAuthHandler(queries, cfg.JWTSecret, cfg.TelegramBotToken, cfg.AppTLS)
 	midH := api.NewMiddlewareHandler(authH, cfg.EnableCORS, cfg.AllowedOrigins)
