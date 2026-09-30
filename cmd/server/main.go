@@ -58,7 +58,7 @@ func main() {
 	}
 
 	if cfg.AppEnv == config.EnvDevelopment {
-		if err = api.SeedDevData(ctx, queries); err != nil {
+		if err = api.SeedDevData(ctx, queries, cfg.DevTelegramID); err != nil {
 			log.Fatalf("Error seeding development data: %v", err)
 		}
 	}

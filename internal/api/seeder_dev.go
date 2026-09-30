@@ -21,10 +21,10 @@ const (
 // so that all endpoints can be exercised via Swagger or manual testing without
 // any prior manual setup. All insertions are idempotent: running the server
 // multiple times will not create duplicates.
-func SeedDevData(ctx context.Context, queries db.Querier) error {
+func SeedDevData(ctx context.Context, queries db.Querier, telegramID string) error {
 	log.Println("[dev-seeder] Starting development data seeding...")
 
-	user, err := ensureDevUser(ctx, queries)
+	user, err := ensureDevUser(ctx, queries, telegramID)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,11 @@ func SeedDevData(ctx context.Context, queries db.Querier) error {
 }
 
 // ensureDevUser returns the dev user, creating it if it does not exist yet.
-func ensureDevUser(ctx context.Context, queries db.Querier) (db.User, error) {
+// If a telegramID is provided the user is created with it linked directly,
+// so the normal Telegram login flow works without any manual setup.
+// If no telegramID is configured, the user is created with a passkey only
+// and can still be used via the dev-login endpoint in Swagger.
+func ensureDevUser(ctx context.Context, queries db.Querier, telegramID string) (db.User, error) {
 	user, err := queries.GetUserByEmail(ctx, sql.NullString{String: devUserEmail, Valid: true})
 	if err == nil {
 		log.Printf("[dev-seeder] Dev user already exists (id=%d), skipping.\n", user.ID)
@@ -63,14 +67,24 @@ func ensureDevUser(ctx context.Context, queries db.Querier) (db.User, error) {
 		return db.User{}, err
 	}
 
-	user, err = queries.CreateUserWithPasskey(ctx, db.CreateUserWithPasskeyParams{
-		Name:      devUserName,
-		Email:     sql.NullString{String: devUserEmail, Valid: true},
-		PasskeyID: sql.NullString{String: devUserPasskey, Valid: true},
-	})
+	if telegramID != "" {
+		user, err = queries.CreateUserWithTelegram(ctx, db.CreateUserWithTelegramParams{
+			Name:       devUserName,
+			Email:      sql.NullString{String: devUserEmail, Valid: true},
+			TelegramID: sql.NullString{String: telegramID, Valid: true},
+		})
+	} else {
+		log.Println("[dev-seeder] DEV_TELEGRAM_ID not set, creating dev user with passkey only.")
+		user, err = queries.CreateUserWithPasskey(ctx, db.CreateUserWithPasskeyParams{
+			Name:      devUserName,
+			Email:     sql.NullString{String: devUserEmail, Valid: true},
+			PasskeyID: sql.NullString{String: devUserPasskey, Valid: true},
+		})
+	}
 	if err != nil {
 		return db.User{}, err
 	}
+
 	log.Printf("[dev-seeder] Created dev user (id=%d).\n", user.ID)
 	return user, nil
 }
