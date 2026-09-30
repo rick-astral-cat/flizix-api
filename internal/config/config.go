@@ -22,6 +22,7 @@ type Config struct {
 	EnableCORS       bool
 	AllowedOrigins   []string
 	AppTLS           bool
+	DevTelegramID    string
 }
 
 func getEnv(key, fallback string) string {
@@ -63,6 +64,7 @@ func (c *Config) validate() error {
 	case EnvDevelopment:
 		c.DbUrl = os.Getenv("DEV_DB_URL")
 		c.JWTSecret = os.Getenv("DEV_JWT_SECRET")
+		c.DevTelegramID = os.Getenv("DEV_TELEGRAM_ID")
 	case EnvProduction:
 		c.DbUrl = os.Getenv("DB_URL")
 		c.JWTSecret = os.Getenv("JWT_SECRET")
